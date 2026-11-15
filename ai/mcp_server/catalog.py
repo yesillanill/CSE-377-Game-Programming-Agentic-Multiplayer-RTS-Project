@@ -16,6 +16,10 @@ UNIT_TYPES = ("Worker", "Spearman", "Archer", "Cavalry")
 BUILDABLE_TYPES = ("House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower")
 TECH_LINES = ("weapon", "armor", "wall")
 REGIONS = ("NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast")
+RESOURCE_TYPES = ("Wood", "Food", "Gold")
+COMBAT_UNIT_TYPES = ("Spearman", "Archer", "Cavalry")
+# ATTACK hedefi: görünür düşman birim veya bina türü
+TARGET_TYPES = UNIT_TYPES + ("TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall")
 
 # Display names (both modes, English + Turkish) -> canonical ids. Lower-cased, ASCII folded keys.
 _UNIT_ALIASES = {
@@ -52,6 +56,22 @@ def canonical_unit(name: str) -> str | None:
 def canonical_building(name: str) -> str | None:
     k = _key(name)
     return _BUILDING_ALIASES.get(k) or _BUILDING_ALIASES.get(k.replace(" ", ""))
+
+
+_RESOURCE_ALIASES = {"wood": "Wood", "odun": "Wood", "lumber": "Wood", "food": "Food", "yiyecek": "Food",
+                     "yemek": "Food", "gold": "Gold", "altin": "Gold"}
+_TARGET_BUILDING_EXTRA = {"towncenter": "TownCenter", "town center": "TownCenter", "command center": "TownCenter",
+                          "sehir merkezi": "TownCenter", "komuta merkezi": "TownCenter", "base": "TownCenter",
+                          "wall": "Wall", "walls": "Wall", "duvar": "Wall"}
+
+
+def canonical_resource(name: str) -> str | None:
+    return _RESOURCE_ALIASES.get(_key(name))
+
+
+def canonical_target(name: str) -> str | None:
+    """ATTACK hedef türü: önce birim, sonra bina adı (Town Center / Wall dahil)."""
+    return canonical_unit(name) or canonical_building(name) or _TARGET_BUILDING_EXTRA.get(_key(name))
 
 
 def canonical_region(name: str) -> str | None:

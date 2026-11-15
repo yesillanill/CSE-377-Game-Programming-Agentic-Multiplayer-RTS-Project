@@ -44,6 +44,16 @@ class UnityContractTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             SafeSnapshot.model_validate(bad)
 
+    def test_plan_decision_record_from_unity_is_accepted(self):
+        from gateway.app import PlanDecision
+        rec = {"timestamp": "2026-11-15T19:00:00Z", "request_id": "abc123", "match_id": "1234", "ai_exec": True,
+               "decision": "PARTIAL_APPROVE", "plan_action_count": 3, "selected_count": 2, "applied_count": 1,
+               "validator_rejected_count": 1, "rejection_reasons": ["Not enough resources!"],
+               "action_types": ["TRAIN_UNIT", "BUILD", "RESEARCH"]}
+        self.assertEqual(PlanDecision.model_validate(rec).applied_count, 1)
+        with self.assertRaises(ValidationError):
+            PlanDecision.model_validate({**rec, "decision": "EXECUTE_EVERYTHING"})
+
     def test_session_token_is_bound_to_one_match(self):
         store = SessionStore()
         snap = SafeSnapshot.model_validate(json.loads(UNITY_JSON))

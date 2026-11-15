@@ -117,3 +117,5 @@ ai/.venv/
 ai/logs/
 **/__pycache__/
 *.pyc
+
+/docs/

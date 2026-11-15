@@ -66,6 +66,10 @@ def normalize_action(raw: dict) -> dict:
         line = out["tech_line"].strip().lower()
         out["tech_line"] = {"weapons": "weapon", "armour": "armor", "walls": "wall", "silah": "weapon", "zirh": "armor",
                             "zırh": "armor", "duvar": "wall"}.get(line, line)
+    if isinstance(out.get("resource_type"), str):
+        out["resource_type"] = catalog.canonical_resource(out["resource_type"]) or out["resource_type"]
+    if isinstance(out.get("target_type"), str):
+        out["target_type"] = catalog.canonical_target(out["target_type"]) or out["target_type"]
     if isinstance(out.get("target_zone"), str):
         out["target_zone"] = catalog.canonical_region(out["target_zone"]) or out["target_zone"]
     # Fields that do not belong to the action type are removed (the model fills every schema slot).
@@ -74,6 +78,8 @@ def normalize_action(raw: dict) -> dict:
         "BUILD": {"building_type"},
         "RESEARCH": {"tech_line"},
         "MOVE_GROUP": {"unit_type", "target_zone"},
+        "ATTACK": {"unit_type", "count", "target_zone", "target_type"},
+        "GATHER": {"resource_type", "count"},
     }.get(out.get("action_type"))
     if allowed is not None:
         out = {k: v for k, v in out.items() if k in allowed or k in ("action_type", "reason")}
@@ -84,14 +90,20 @@ def normalize_action(raw: dict) -> dict:
     return out
 
 
+def max_plan_actions() -> int:
+    """Plan başına en fazla aksiyon: tek kaynak action_plan.schema.json içindeki maxItems (Unity AiPlanSchema ile aynı)."""
+    return int(schema()["properties"]["actions"]["maxItems"])
+
+
 def validate_plan(plan: dict) -> list[str]:
     return [_err([e]) for e in sorted(_plan_validator().iter_errors(plan), key=lambda e: list(e.absolute_path))]
 
 
-def build_plan(summary: str, confidence: float, raw_actions: list, max_actions: int = 4) -> tuple[dict, list[dict]]:
+def build_plan(summary: str, confidence: float, raw_actions: list, max_actions: int | None = None) -> tuple[dict, list[dict]]:
     """Returns (schema-valid plan, rejected actions with reasons)."""
+    max_actions = min(max_actions or max_plan_actions(), max_plan_actions())
     actions, rejected = [], []
-    for raw in (raw_actions or [])[:8]:
+    for raw in (raw_actions or [])[:32]:  # fazlası sessizce kırpılmaz: max_actions sonrası "rejected" listesine girer
         action = normalize_action(raw)
         errors = list(_action_validator().iter_errors(action))
         if errors:
@@ -125,6 +137,7 @@ def precheck_actions(actions: list[dict], snap: SafeSnapshot) -> list[str]:
             military[u.type] = military.get(u.type, 0) + u.count
     levels = {"weapon": snap.tech.weapon_level, "armor": snap.tech.armor_level, "wall": snap.tech.wall_level}
     researching = bool(snap.tech.researching)
+    idle_workers = sum(u.idle for u in snap.own_units if u.type == "Worker")
 
     def pay(cost: dict) -> str:
         short = {k: cost[k] - res[k] for k in cost if cost[k] > res[k]}
@@ -172,5 +185,25 @@ def precheck_actions(actions: list[dict], snap: SafeSnapshot) -> list[str]:
                 w = "Workers are not moved by MOVE_GROUP"
             elif pool == 0:
                 w = "No matching military units to move"
+        elif t == "ATTACK":
+            # Mirror of GameActionValidator.ValidateAttackOrder: target must be visible NOW (fog of war)
+            zone, ttype = a["target_zone"], a.get("target_type")
+            visible = [e for e in snap.visible_enemies if e.region == zone and (not ttype or e.type == ttype)]
+            visible += [b for b in snap.visible_enemy_buildings if b.region == zone and (not ttype or b.type == ttype)]
+            utype = a.get("unit_type")
+            if utype == "Worker":
+                w = "Only combat units can attack."
+            elif not visible:
+                w = "Target is not visible."
+            else:
+                have = military.get(utype, 0) if utype else sum(military.values())
+                if have < a["count"]:
+                    w = f"Not enough combat units (have {have}, need {a['count']})."
+        elif t == "GATHER":
+            # Mirror of GameActionValidator.ValidateGatherOrder (explored-source check only exists in Unity)
+            if idle_workers < a["count"]:
+                w = f"Not enough idle workers (have {idle_workers}, need {a['count']})."
+            else:
+                idle_workers -= a["count"]
         warnings.append(w)
     return warnings

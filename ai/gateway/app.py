@@ -36,10 +36,19 @@ class AskRequest(BaseModel):
 
 
 class PlanDecision(BaseModel):
+    """Unity AiPlanDecisionRecord: karar türü + seçilen / uygulanan / doğrulayıcı reddi sayıları (değerlendirme için)."""
     model_config = ConfigDict(extra="forbid")
     request_id: str = Field(max_length=32)
-    decision: str = Field(pattern="^(APPROVED|REJECTED)$")
-    results: list[str] = Field(default_factory=list, max_length=16)
+    decision: str = Field(pattern="^(FULL_APPROVE|PARTIAL_APPROVE|REJECT|ADVICE_ONLY)$")
+    timestamp: str = Field(default="", max_length=40)
+    match_id: str = Field(default="", max_length=64)
+    ai_exec: bool = False
+    plan_action_count: int = Field(default=0, ge=0, le=8)
+    selected_count: int = Field(default=0, ge=0, le=8)
+    applied_count: int = Field(default=0, ge=0, le=8)
+    validator_rejected_count: int = Field(default=0, ge=0, le=8)
+    rejection_reasons: list[str] = Field(default_factory=list, max_length=8)
+    action_types: list[str] = Field(default_factory=list, max_length=8)
 
 
 state: dict = {}
@@ -105,6 +114,9 @@ async def plan_decision(body: PlanDecision, x_rts_session: str | None = Header(d
     state["logger"].log_plan_decision({
         "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "match_session": session_hash(token), "request_id": body.request_id,
-        "decision": body.decision, "results": [r[:200] for r in body.results],
+        "decision": body.decision, "ai_exec": body.ai_exec, "plan_action_count": body.plan_action_count,
+        "selected_count": body.selected_count, "applied_count": body.applied_count,
+        "validator_rejected_count": body.validator_rejected_count,
+        "rejection_reasons": [r[:200] for r in body.rejection_reasons], "action_types": body.action_types,
     })
     return {"ok": True}
