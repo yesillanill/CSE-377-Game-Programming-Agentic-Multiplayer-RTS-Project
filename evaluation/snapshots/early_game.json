@@ -1,0 +1,16 @@
+{
+  "match_id": "eval-early-game",
+  "game_mode": "Medieval",
+  "ui_language": "en",
+  "game_time_seconds": 95.0,
+  "map_size": {"x": 64, "y": 64},
+  "base_region": "SouthWest",
+  "resources": {"wood": 160, "food": 230, "gold": 90},
+  "population": {"current": 6, "max": 25, "queued": 1},
+  "own_units": [{"type": "Worker", "display_name": "Worker", "count": 6, "region": "SouthWest", "idle": 2}],
+  "own_buildings": [{"type": "TownCenter", "display_name": "Town Center", "count": 1, "queued_units": 1, "region": "SouthWest"}],
+  "visible_enemies": [],
+  "visible_enemy_buildings": [],
+  "tech": {"weapon_level": 0, "armor_level": 0, "wall_level": 0, "researching": "", "research_progress": 0.0, "researched": []},
+  "recent_events": []
+}

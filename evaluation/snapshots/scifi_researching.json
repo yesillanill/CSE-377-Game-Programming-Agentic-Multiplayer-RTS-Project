@@ -1,0 +1,26 @@
+{
+  "match_id": "eval-scifi",
+  "game_mode": "SciFi",
+  "ui_language": "en",
+  "game_time_seconds": 480.0,
+  "map_size": {"x": 64, "y": 64},
+  "base_region": "NorthEast",
+  "resources": {"wood": 90, "food": 140, "gold": 60},
+  "population": {"current": 18, "max": 30, "queued": 0},
+  "own_units": [
+    {"type": "Worker", "display_name": "Engineer", "count": 9, "region": "NorthEast", "idle": 1},
+    {"type": "Spearman", "display_name": "Marine", "count": 4, "region": "NorthEast", "idle": 4},
+    {"type": "Cavalry", "display_name": "Tank", "count": 3, "region": "East", "idle": 3}
+  ],
+  "own_buildings": [
+    {"type": "TownCenter", "display_name": "Command Center", "count": 1, "region": "NorthEast"},
+    {"type": "House", "display_name": "Habitat", "count": 1, "region": "NorthEast"},
+    {"type": "Barracks", "display_name": "Armory", "count": 1, "region": "NorthEast"},
+    {"type": "Stable", "display_name": "Vehicle Bay", "count": 1, "region": "NorthEast"},
+    {"type": "Blacksmith", "display_name": "Tech Lab", "count": 1, "region": "NorthEast"}
+  ],
+  "visible_enemies": [{"type": "Cavalry", "display_name": "Tank", "count": 5, "region": "East"}],
+  "visible_enemy_buildings": [],
+  "tech": {"weapon_level": 1, "armor_level": 1, "wall_level": 0, "researching": "WeaponUpgrade2", "research_progress": 0.4, "researched": ["WeaponUpgrade1", "ArmorUpgrade1"]},
+  "recent_events": [{"type": "UNDER_ATTACK", "detail": "Engineer", "region": "East", "seconds_ago": 5}]
+}

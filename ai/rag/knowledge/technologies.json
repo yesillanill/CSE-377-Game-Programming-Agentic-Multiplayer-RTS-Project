@@ -1,0 +1,74 @@
+[
+  {
+    "id": "tech_weapon_1_v1", "type": "technology", "name": "WeaponUpgrade1", "line": "weapon", "level": 1,
+    "display_name": "Copper Weapons", "scifi_name": "Meteorite Weapons",
+    "aliases": ["weapon", "weapons", "copper", "damage upgrade", "silah", "bakir", "bakır", "hasar"],
+    "cost": {"wood": 0, "food": 60, "gold": 80}, "research_time_s": 20, "researched_at": "Blacksmith",
+    "prerequisite": "none", "effect": "+15% damage for all soldiers (not Workers).",
+    "description": "First weapon tier. Starting weapons are Wood (Medieval) / Platinum (Sci-Fi)."
+  },
+  {
+    "id": "tech_weapon_2_v1", "type": "technology", "name": "WeaponUpgrade2", "line": "weapon", "level": 2,
+    "display_name": "Iron Weapons", "scifi_name": "Obsidian Weapons",
+    "aliases": ["weapon", "weapons", "iron", "iron weapons", "silah", "demir", "hasar"],
+    "cost": {"wood": 50, "food": 100, "gold": 150}, "research_time_s": 30, "researched_at": "Blacksmith",
+    "prerequisite": "WeaponUpgrade1 (Copper Weapons)", "effect": "+30% damage in total for all soldiers.",
+    "description": "Second weapon tier."
+  },
+  {
+    "id": "tech_weapon_3_v1", "type": "technology", "name": "WeaponUpgrade3", "line": "weapon", "level": 3,
+    "display_name": "Gold Weapons", "scifi_name": "Titanium Weapons",
+    "aliases": ["weapon", "weapons", "gold weapons", "silah", "altin silah", "altın silah", "hasar"],
+    "cost": {"wood": 100, "food": 150, "gold": 250}, "research_time_s": 40, "researched_at": "Blacksmith",
+    "prerequisite": "WeaponUpgrade2 (Iron Weapons)", "effect": "+50% damage in total for all soldiers. Maximum weapon tier.",
+    "description": "Final weapon tier."
+  },
+  {
+    "id": "tech_armor_1_v1", "type": "technology", "name": "ArmorUpgrade1", "line": "armor", "level": 1,
+    "display_name": "Wood Armor", "scifi_name": "Platinum Armor",
+    "aliases": ["armor", "armour", "defense", "zirh", "zırh", "ahsap", "ahşap"],
+    "cost": {"wood": 60, "food": 40, "gold": 0}, "research_time_s": 15, "researched_at": "Blacksmith",
+    "prerequisite": "none", "effect": "Soldiers take 10% less damage.",
+    "description": "First armor tier. Soldiers start with no armor."
+  },
+  {
+    "id": "tech_armor_2_v1", "type": "technology", "name": "ArmorUpgrade2", "line": "armor", "level": 2,
+    "display_name": "Copper Armor", "scifi_name": "Meteorite Armor",
+    "aliases": ["armor", "armour", "copper armor", "zirh", "zırh", "bakir", "bakır"],
+    "cost": {"wood": 80, "food": 80, "gold": 60}, "research_time_s": 25, "researched_at": "Blacksmith",
+    "prerequisite": "ArmorUpgrade1", "effect": "Soldiers take 20% less damage.",
+    "description": "Second armor tier."
+  },
+  {
+    "id": "tech_armor_3_v1", "type": "technology", "name": "ArmorUpgrade3", "line": "armor", "level": 3,
+    "display_name": "Iron Armor", "scifi_name": "Obsidian Armor",
+    "aliases": ["armor", "armour", "iron armor", "zirh", "zırh", "demir"],
+    "cost": {"wood": 120, "food": 120, "gold": 140}, "research_time_s": 35, "researched_at": "Blacksmith",
+    "prerequisite": "ArmorUpgrade2", "effect": "Soldiers take 30% less damage.",
+    "description": "Third armor tier."
+  },
+  {
+    "id": "tech_armor_4_v1", "type": "technology", "name": "ArmorUpgrade4", "line": "armor", "level": 4,
+    "display_name": "Gold Armor", "scifi_name": "Titanium Armor",
+    "aliases": ["armor", "armour", "gold armor", "zirh", "zırh", "altin", "altın"],
+    "cost": {"wood": 180, "food": 160, "gold": 240}, "research_time_s": 45, "researched_at": "Blacksmith",
+    "prerequisite": "ArmorUpgrade3", "effect": "Soldiers take 40% less damage. Maximum armor tier.",
+    "description": "Final armor tier."
+  },
+  {
+    "id": "tech_wall_1_v1", "type": "technology", "name": "WallUpgrade1", "line": "wall", "level": 1,
+    "display_name": "Stone Walls", "scifi_name": "Iron Walls",
+    "aliases": ["wall upgrade", "walls", "stone", "duvar", "tas duvar", "taş duvar"],
+    "cost": {"wood": 100, "food": 0, "gold": 50}, "research_time_s": 25, "researched_at": "Blacksmith",
+    "prerequisite": "none", "effect": "Walls become 600 HP (Medieval) / 900 HP (Sci-Fi); existing walls are upgraded too.",
+    "description": "First wall tier."
+  },
+  {
+    "id": "tech_wall_2_v1", "type": "technology", "name": "WallUpgrade2", "line": "wall", "level": 2,
+    "display_name": "Brick Walls", "scifi_name": "Obsidian Walls",
+    "aliases": ["wall upgrade", "walls", "brick", "duvar", "tugla", "tuğla"],
+    "cost": {"wood": 150, "food": 0, "gold": 120}, "research_time_s": 35, "researched_at": "Blacksmith",
+    "prerequisite": "WallUpgrade1", "effect": "Walls become 1000 HP (Medieval) / 1500 HP (Sci-Fi). Maximum wall tier.",
+    "description": "Final wall tier."
+  }
+]

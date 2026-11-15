@@ -1,0 +1,7 @@
+# AI Strategic Commander (gateway + custom MCP server + agent + RAG). Python 3.10+.
+mcp>=2.3,<3
+fastapi>=0.110
+uvicorn>=0.29
+httpx>=0.27
+pydantic>=2.6
+jsonschema>=4.21

@@ -111,3 +111,9 @@ InitTestScene*.unity*
 # Photon
 **/PhotonServerSettings.asset
 **/PhotonServerSettings.asset.meta
+
+# AI Strategic Commander (Python)
+ai/.venv/
+ai/logs/
+**/__pycache__/
+*.pyc

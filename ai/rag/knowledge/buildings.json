@@ -1,0 +1,110 @@
+[
+  {
+    "id": "building_towncenter_v1",
+    "type": "building",
+    "name": "TownCenter",
+    "display_name": "Town Center",
+    "scifi_name": "Command Center",
+    "aliases": ["town center", "tc", "base", "command center", "sehir merkezi", "şehir merkezi", "komuta merkezi", "üs"],
+    "cost": {"wood": 0, "food": 0, "gold": 0},
+    "health": 800,
+    "population_bonus": 25,
+    "trains": ["Worker"],
+    "description": "Starting building. Trains Workers, is the drop-off point for gathered resources and gives +25 population capacity. If your Town Center is destroyed you lose the match."
+  },
+  {
+    "id": "building_house_v1",
+    "type": "building",
+    "name": "House",
+    "scifi_name": "Habitat",
+    "aliases": ["house", "habitat", "ev", "yasam modulu", "yaşam modülü", "population", "nüfus"],
+    "cost": {"wood": 30, "food": 0, "gold": 0},
+    "construction_time_s": 8,
+    "health": 150,
+    "population_bonus": 5,
+    "trains": [],
+    "description": "Cheap building that raises the population cap by +5. Build Houses before the population limit blocks unit training."
+  },
+  {
+    "id": "building_barracks_v1",
+    "type": "building",
+    "name": "Barracks",
+    "scifi_name": "Armory",
+    "aliases": ["barracks", "armory", "kisla", "kışla", "cephanelik"],
+    "cost": {"wood": 100, "food": 0, "gold": 0},
+    "construction_time_s": 12,
+    "health": 400,
+    "trains": ["Spearman", "Archer"],
+    "description": "Military building required to train Spearmen and Archers (Marines and Snipers in Sci-Fi). Training queue holds up to 5 units."
+  },
+  {
+    "id": "building_stable_v1",
+    "type": "building",
+    "name": "Stable",
+    "scifi_name": "Vehicle Bay",
+    "aliases": ["stable", "vehicle bay", "ahir", "ahır", "arac hangari", "araç hangarı"],
+    "cost": {"wood": 120, "food": 0, "gold": 20},
+    "construction_time_s": 14,
+    "health": 450,
+    "trains": ["Cavalry"],
+    "description": "Required to train Cavalry (Tanks in Sci-Fi). Training queue holds up to 5 units."
+  },
+  {
+    "id": "building_blacksmith_v1",
+    "type": "building",
+    "name": "Blacksmith",
+    "scifi_name": "Tech Lab",
+    "aliases": ["blacksmith", "tech lab", "demirci", "teknoloji lab", "research", "araştırma"],
+    "cost": {"wood": 120, "food": 0, "gold": 40},
+    "construction_time_s": 14,
+    "health": 450,
+    "trains": [],
+    "description": "Research building. All Weapon, Armor and Wall upgrades are researched here, one research at a time. If it is destroyed during research, the research is cancelled and refunded."
+  },
+  {
+    "id": "building_mine_v1",
+    "type": "building",
+    "name": "Mine",
+    "scifi_name": "Gold Refinery",
+    "aliases": ["mine", "gold mine", "gold refinery", "maden", "altin rafinerisi", "altın rafinerisi", "gold income"],
+    "cost": {"wood": 0, "food": 0, "gold": 75},
+    "construction_time_s": 15,
+    "health": 500,
+    "trains": [],
+    "description": "Gold-only building that produces +10 gold every 10 seconds while one Worker is assigned inside it (max 1 worker). The worker inside is hidden and cannot be attacked."
+  },
+  {
+    "id": "building_tower_v1",
+    "type": "building",
+    "name": "DefenseTower",
+    "display_name": "Archer Tower",
+    "scifi_name": "Rocket Turret",
+    "aliases": ["tower", "archer tower", "defense tower", "rocket turret", "kule", "okcu kulesi", "okçu kulesi", "roket tareti", "savunma"],
+    "cost": {"wood": 0, "food": 0, "gold": 100},
+    "construction_time_s": 18,
+    "health": 450,
+    "trains": [],
+    "description": "Defensive tower bought with gold only. It must be manned by one soldier (an Archer in Medieval, a Marine in Sci-Fi) to fire. Archer Tower: 12 damage, range 6.5, every 1.6 s. Rocket Turret: 30 damage, range 7, every 3 s. Only Archers can attack an enemy Archer Tower; only Tanks can attack an enemy Rocket Turret."
+  },
+  {
+    "id": "building_wall_v1",
+    "type": "building",
+    "name": "Wall",
+    "scifi_name": "Wall",
+    "aliases": ["wall", "walls", "duvar", "fortification", "surlar"],
+    "cost": {"wood": 10, "food": 0, "gold": 0},
+    "construction_time_s": 5,
+    "health": 300,
+    "trains": [],
+    "description": "1x1 wall segment, 10 wood each, drawn by dragging. Health depends on the wall upgrade tier: Medieval Wood/Stone/Brick = 300/600/1000 HP, Sci-Fi Cement/Iron/Obsidian = 450/900/1500 HP. Upgrading also upgrades existing walls."
+  },
+  {
+    "id": "building_farm_v1",
+    "type": "building",
+    "name": "Farm",
+    "scifi_name": "Farm",
+    "aliases": ["farm", "farming", "tarla", "ciftlik", "çiftlik", "food income", "yiyecek"],
+    "cost": {"wood": 10, "food": 0, "gold": 0},
+    "description": "Farm plot, 10 wood per cell. Workers plant it, it grows for about 45 seconds and the harvest returns three times the food spent on planting (net 2x profit). Idle workers nearby farm automatically."
+  }
+]

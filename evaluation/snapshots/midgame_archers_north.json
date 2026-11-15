@@ -1,0 +1,33 @@
+{
+  "match_id": "eval-midgame",
+  "game_mode": "Medieval",
+  "ui_language": "tr",
+  "game_time_seconds": 640.0,
+  "map_size": {"x": 64, "y": 64},
+  "base_region": "South",
+  "resources": {"wood": 380, "food": 520, "gold": 310},
+  "population": {"current": 22, "max": 35, "queued": 2},
+  "own_units": [
+    {"type": "Worker", "display_name": "Worker", "count": 10, "region": "South", "idle": 0},
+    {"type": "Spearman", "display_name": "Spearman", "count": 6, "region": "Center", "idle": 6},
+    {"type": "Archer", "display_name": "Archer", "count": 2, "region": "South", "idle": 2},
+    {"type": "Cavalry", "display_name": "Cavalry", "count": 2, "region": "South", "idle": 2}
+  ],
+  "own_buildings": [
+    {"type": "TownCenter", "display_name": "Town Center", "count": 1, "region": "South"},
+    {"type": "House", "display_name": "House", "count": 2, "region": "South"},
+    {"type": "Barracks", "display_name": "Barracks", "count": 1, "queued_units": 2, "region": "South"},
+    {"type": "Stable", "display_name": "Stable", "count": 1, "region": "South"},
+    {"type": "Blacksmith", "display_name": "Blacksmith", "count": 1, "region": "South"}
+  ],
+  "visible_enemies": [
+    {"type": "Archer", "display_name": "Archer", "count": 6, "region": "North"},
+    {"type": "Spearman", "display_name": "Spearman", "count": 3, "region": "Center"}
+  ],
+  "visible_enemy_buildings": [{"type": "DefenseTower", "display_name": "Archer Tower", "count": 1, "region": "North"}],
+  "tech": {"weapon_level": 1, "armor_level": 0, "wall_level": 0, "researching": "", "research_progress": 0.0, "researched": ["WeaponUpgrade1"]},
+  "recent_events": [
+    {"type": "ENEMY_SPOTTED", "detail": "Archer", "region": "North", "seconds_ago": 14},
+    {"type": "UNIT_LOST", "detail": "Spearman", "region": "Center", "seconds_ago": 22}
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "match_id": "class-demo-01",
+  "game_mode": "Medieval",
+  "ui_language": "en",
+  "game_time_seconds": 412.0,
+  "map_size": {"x": 64, "y": 64},
+  "base_region": "SouthWest",
+  "resources": {"wood": 420, "food": 180, "gold": 250},
+  "population": {"current": 14, "max": 30, "queued": 0},
+  "own_units": [
+    {"type": "Worker", "display_name": "Worker", "count": 8, "region": "SouthWest", "idle": 1},
+    {"type": "Spearman", "display_name": "Spearman", "count": 3, "region": "SouthWest", "idle": 3},
+    {"type": "Archer", "display_name": "Archer", "count": 3, "region": "West", "idle": 3}
+  ],
+  "own_buildings": [
+    {"type": "TownCenter", "display_name": "Town Center", "count": 1, "region": "SouthWest"},
+    {"type": "House", "display_name": "House", "count": 1, "region": "SouthWest"},
+    {"type": "Barracks", "display_name": "Barracks", "count": 1, "region": "SouthWest"}
+  ],
+  "visible_enemies": [
+    {"type": "Cavalry", "display_name": "Cavalry", "count": 4, "region": "West"}
+  ],
+  "visible_enemy_buildings": [],
+  "tech": {"weapon_level": 0, "armor_level": 1, "wall_level": 0, "researching": "", "research_progress": 0.0, "researched": ["ArmorUpgrade1"]},
+  "recent_events": [
+    {"type": "UNDER_ATTACK", "detail": "Worker", "region": "West", "seconds_ago": 8},
+    {"type": "ENEMY_SPOTTED", "detail": "Cavalry", "region": "West", "seconds_ago": 10}
+  ]
+}
