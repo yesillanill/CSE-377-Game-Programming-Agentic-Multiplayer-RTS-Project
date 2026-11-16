@@ -134,8 +134,11 @@ class LayaService:
                 import laya
                 router.attach(FINETUNED_NAME, laya.load(self.bot_model_path, device=device))
             log.info("Laya bot checkpoint: %s%s", self.bot_model, f" ({self.bot_model_path})" if self.bot_model_path else "")
-            # Warm-up: the first forward pass allocates kernels / caches; do it now, not on the first game request
-            router.predict("warm up", {"w": {"type": "noul", "instructions": "Is this a warm-up?"}}, model=self.guard_model)
+            # Warm-up: the first forward pass allocates kernels / caches; do it now, not on the first game request.
+            # BOTH resident checkpoints are warmed: the first in-game /bot/decide must fit its 1.2 s timeout.
+            warm_q = {"w": {"type": "noul", "instructions": "Is this a warm-up?"}}
+            for model in dict.fromkeys((self.guard_model, self.bot_model)):
+                router.predict("warm up", warm_q, model=model)
             self._router = router
             self.device = device
             self.load_seconds = round(time.perf_counter() - started, 1)

@@ -245,10 +245,14 @@ class StrategicCommander:
                 tools = {t.name: t for t in listed.tools if t.name in ALL_TOOLS}  # allow-list
                 await self._run_with_tools(mcp, tools, ctx, question, lang, pre, state)
         except LLMError as exc:
-            state["category"] = state["category"] or "error"
-            state["answer"] = guard.canned("llm_down", lang)
-            state["limited_confidence"] = True
-            state["error"] = str(exc)
+            self._llm_down(state, lang, exc)
+        except BaseExceptionGroup as eg:
+            # The in-process MCP client runs in an anyio task group: an LLMError raised in the body reaches us
+            # wrapped in an ExceptionGroup, which a plain `except LLMError` does not catch (it surfaced as HTTP 500).
+            exc = _first_exception(eg, LLMError)
+            if exc is None:
+                raise
+            self._llm_down(state, lang, exc)
 
         state["answer"] = guard.sanitize_answer(state["answer"])
         state["latency_ms"] = int((time.perf_counter() - started) * 1000)
@@ -275,6 +279,13 @@ class StrategicCommander:
         return response
 
     # ------------------------------------------------------------------------------------------ internals
+    def _llm_down(self, state: dict, lang: str, exc: LLMError) -> None:
+        """Graceful degradation: the player gets the canned 'AI cannot answer' message, never an HTTP 500."""
+        state["category"] = state["category"] or "error"
+        state["answer"] = guard.canned("llm_down", lang)
+        state["limited_confidence"] = True
+        state["error"] = str(exc)
+
     async def _llm(self, state: dict, messages: list[dict], schema: dict, num_predict: int = 700) -> dict:
         if state["llm_calls"] >= MAX_AGENT_STEPS:
             raise LLMError("Agent step limit reached.")
@@ -520,6 +531,18 @@ class StrategicCommander:
 
 def listed_sorted(tools: dict):
     return [tools[k] for k in sorted(tools)]
+
+
+def _first_exception(eg: BaseExceptionGroup, kind: type) -> BaseException | None:
+    """First leaf exception of `kind` inside a (possibly nested) ExceptionGroup, or None."""
+    for e in eg.exceptions:
+        if isinstance(e, kind):
+            return e
+        if isinstance(e, BaseExceptionGroup):
+            found = _first_exception(e, kind)
+            if found is not None:
+                return found
+    return None
 
 
 def _string_fields(obj, limit: int = 24) -> list[str]:

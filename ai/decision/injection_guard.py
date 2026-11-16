@@ -7,6 +7,11 @@ This layer only adds a fast semantic check:
     player question  -> intent (choice) + injection (noul)  -> allowed | flagged | blocked
     RAG chunks / tool outputs -> injection (noul) per text   -> kept | withheld
 
+A question is only hard-blocked when Laya scores it >= RTS_INJECTION_BLOCK AND the deterministic pattern layer
+(agent/guard.py precheck) also sees an injection/cheat pattern; a Laya-only "blocked" verdict is downgraded to
+"flagged" (benign questions were observed at p>0.95, e.g. Turkish "Şu an kaç mızrakçı eğitebilirim?"). Flagged
+questions run with the SECURITY REMINDER and all code-level protections still apply.
+
 Thresholds (env): RTS_INJECTION_BLOCK (default 0.85), RTS_INJECTION_FLAG (default 0.50).
 If Laya is not loaded (loading / failed / disabled) the layer is skipped, a warning is logged once, and the request
 is processed normally by the existing guards.
@@ -23,6 +28,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
+from agent import guard as code_guard
 from agent.logging_utils import AgentLogger, session_hash
 from decision.laya_service import LayaService, LayaUnavailable
 
@@ -73,6 +79,7 @@ class GuardResult:
     injection_p: float = 0.0
     laya_ms: float = 0.0
     intent_probabilities: dict = field(default_factory=dict)
+    downgraded: bool = False     # Laya said "blocked" but the code-level patterns saw nothing -> flagged instead
 
     def to_public(self) -> dict:
         return {"action": self.action, "intent": self.intent, "injection_p": round(self.injection_p, 3), "laya_ms": self.laya_ms}
@@ -109,12 +116,15 @@ class InjectionGuard:
         return "allowed"
 
     def _log(self, session: str, source: str, text: str, result: GuardResult) -> None:
-        self.logger.log_security({
+        record = {
             "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "event": "laya_injection_check", "source": source, "match_session": session_hash(session),
             "intent": result.intent, "injection_p": round(result.injection_p, 3), "action": result.action,
             "msg_sha": short_hash(text), "laya_ms": result.laya_ms,
-        })
+        }
+        if result.downgraded:
+            record["downgraded"] = True  # Laya wanted "blocked"; the pattern layer saw nothing
+        self.logger.log_security(record)
 
     # ------------------------------------------------------------------------------------------ player question
     async def check_question(self, text: str, session: str) -> GuardResult:
@@ -133,7 +143,17 @@ class InjectionGuard:
         intent_ans = answers.get("intent", {}) or {}
         intent = str(intent_ans.get("choice", ""))
         p = float((answers.get("injection", {}) or {}).get("noul", 0.0))
-        result = GuardResult(self.decide(p), intent, p, ms, dict(intent_ans.get("probabilities") or {}))
+        action = self.decide(p)
+        downgraded = False
+        if action == "blocked":
+            # Laya is a semantic EXTRA layer and misreads some benign questions (e.g. Turkish "Şu an kaç mızrakçı
+            # eğitebilirim?" scored 0.97). A hard block needs the deterministic pattern layer (agent/guard.py) to
+            # agree; otherwise the question runs as "flagged": the LLM gets the SECURITY REMINDER and every
+            # code-level protection (fog-filtered snapshot, tool allow-list, validators) still applies.
+            pre = code_guard.precheck(text)
+            if not pre["injection"] and not pre["cheat"]:
+                action, downgraded = "flagged", True
+        result = GuardResult(action, intent, p, ms, dict(intent_ans.get("probabilities") or {}), downgraded)
         self._log(session, "question", text, result)
         return result
 

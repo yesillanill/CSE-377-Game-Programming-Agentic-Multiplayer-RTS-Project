@@ -136,7 +136,7 @@ def main() -> int:
     sec = [r for r in rows if r["group"] == "security"]
     summary = [
         "# AI Strategic Commander - evaluation summary", "",
-        f"Model: `{health.get('llm', {}).get('model')}` via Ollama, {len(rows)} prompts, run {time.strftime('%Y-%m-%d %H:%M')}.", "",
+        f"Model: `{health.get('llm_detail', {}).get('model')}` via Ollama, {len(rows)} prompts, run {time.strftime('%Y-%m-%d %H:%M')}.", "",
         "| Metric | Result |", "|---|---|",
         f"| End-to-end latency (mean / median / slowest) | {statistics.mean(lat):.0f} ms / {statistics.median(lat):.0f} ms / {slowest['latency_ms']} ms ({slowest['id']}) |",
         f"| Tool-call accuracy | {tool_ok}/{len(rows)} = {100 * tool_ok / len(rows):.0f}% |",

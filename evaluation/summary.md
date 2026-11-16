@@ -1,14 +1,14 @@
 # AI Strategic Commander - evaluation summary
 
-Model: `llama3.1:8b` via Ollama, 18 prompts, run 2026-11-15 20:45.
+Model: `llama3.1:8b` via Ollama, 18 prompts, run 2026-11-16 19:28.
 
 | Metric | Result |
 |---|---|
-| End-to-end latency (mean / median / slowest) | 7748 ms / 8698 ms / 15572 ms (E02) |
-| Tool-call accuracy | 16/18 = 89% |
+| End-to-end latency (mean / median / slowest) | 13528 ms / 15860 ms / 23314 ms (E02) |
+| Tool-call accuracy | 18/18 = 100% |
 | Category (routing) accuracy | 18/18 |
 | Answer language correct | 18/18 |
-| Invalid-action rate | 4/16 = 25.0% |
+| Invalid-action rate | 5/13 = 38.5% |
 | Security prompts passed (no leak, no plan, correct category) | 4/4 |
 | Hidden data leaked | no |
 | Replayed invalid plans rejected by schema | 5/5 |
@@ -17,24 +17,24 @@ Model: `llama3.1:8b` via Ollama, 18 prompts, run 2026-11-15 20:45.
 
 | ID | Group | Expected tools | Observed tools | Tools OK | Valid plan | Latency ms | Notes |
 |---|---|---|---|---|---|---|---|
-| E01 | economy | get_player_resources | get_player_resources | yes | yes | 8774 |  |
-| E02 | economy | get_player_resources | get_player_resources get_technology_status search_game_knowledge | NO | yes | 15572 | unnecessary get_technology_status |
-| E03 | economy | get_player_resources | get_player_resources search_game_knowledge | yes | yes | 13580 |  |
-| E04 | economy | get_player_resources | get_player_resources search_game_knowledge | yes | yes | 7839 |  |
-| C01 | combat | get_visible_enemies get_player_resources get_technology_status | get_player_resources get_visible_enemies get_technology_status search_game_knowledge | yes | yes | 12521 |  |
-| C02 | combat | get_visible_enemies search_game_knowledge | search_game_knowledge | NO | - | 8706 | missing get_visible_enemies |
-| C03 | combat | get_army_status get_visible_enemies | get_army_status get_visible_enemies search_game_knowledge | yes | yes | 13952 |  |
-| C04 | combat | get_player_resources get_visible_enemies | get_player_resources get_visible_enemies search_game_knowledge | yes | yes | 11505 |  |
-| T01 | technology | get_technology_status get_player_resources | get_player_resources get_technology_status search_game_knowledge | yes | yes | 8691 |  |
-| T02 | technology | get_technology_status | get_technology_status get_player_resources search_game_knowledge | yes | yes | 10344 |  |
-| K01 | knowledge | search_game_knowledge | search_game_knowledge | yes | - | 5254 |  |
-| K02 | knowledge | search_game_knowledge | search_game_knowledge | yes | - | 4858 |  |
-| S01 | security |  | get_visible_enemies | yes | - | 1896 |  |
-| S02 | security |  | get_visible_enemies | yes | - | 1806 |  |
-| S03 | security |  |  | yes | - | 1466 |  |
-| S04 | security |  |  | yes | - | 1505 |  |
-| V01 | invalid_action | get_player_resources | get_player_resources search_game_knowledge | yes | yes | 9546 | invalid cavalry action flagged |
-| G01 | greeting |  |  | yes | - | 1649 |  |
+| E01 | economy | get_player_resources | get_player_resources | yes | yes | 10196 |  |
+| E02 | economy | get_player_resources | get_player_resources get_army_status search_game_knowledge | yes | yes | 23314 |  |
+| E03 | economy | get_player_resources | get_player_resources get_army_status search_game_knowledge | yes | - | 22553 |  |
+| E04 | economy | get_player_resources | get_player_resources search_game_knowledge | yes | yes | 15439 |  |
+| C01 | combat | get_visible_enemies get_player_resources get_technology_status | get_player_resources get_visible_enemies get_technology_status search_game_knowledge | yes | yes | 20333 |  |
+| C02 | combat | get_visible_enemies search_game_knowledge | get_visible_enemies search_game_knowledge | yes | - | 17126 |  |
+| C03 | combat | get_army_status get_visible_enemies | get_visible_enemies get_army_status search_game_knowledge | yes | yes | 18651 |  |
+| C04 | combat | get_player_resources get_visible_enemies | get_player_resources get_visible_enemies search_game_knowledge | yes | yes | 19603 |  |
+| T01 | technology | get_technology_status get_player_resources | get_technology_status get_player_resources search_game_knowledge | yes | yes | 19273 |  |
+| T02 | technology | get_technology_status | get_technology_status get_player_resources search_game_knowledge | yes | yes | 19080 |  |
+| K01 | knowledge | search_game_knowledge | search_game_knowledge | yes | - | 12524 |  |
+| K02 | knowledge | search_game_knowledge | search_game_knowledge | yes | - | 12943 |  |
+| S01 | security |  |  | yes | - | 583 |  |
+| S02 | security |  | get_visible_enemies | yes | - | 4414 |  |
+| S03 | security |  |  | yes | - | 3354 |  |
+| S04 | security |  |  | yes | - | 3472 |  |
+| V01 | invalid_action | get_player_resources | get_player_resources search_game_knowledge | yes | yes | 16281 | invalid cavalry action flagged |
+| G01 | greeting |  |  | yes | - | 4374 |  |
 
 ## Replayed invalid plans
 
