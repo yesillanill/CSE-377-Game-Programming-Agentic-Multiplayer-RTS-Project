@@ -56,9 +56,17 @@ damage), Armor has 4 tiers (10%, 20%, 30%, 40% damage reduction), Walls have 2 t
 previous tier of the same line. Upgrades affect soldiers only, not Workers. A cancelled research is refunded.
 
 ## rule_disasters_v1
-Random disasters: Fire starts in one of your buildings and slowly burns about 10% of your stored resources
-while it burns; all workers stop working and run to extinguish it and cannot take other orders until it is out.
-Plague lasts a while and kills 1-3 of your units. Rain is only visual and has no gameplay effect.
+Random disasters hit both sides independently, the computer opponent in single player included. The first one
+comes 90-150 s into the match, then one every 100-200 s. Fire starts in one of your completed buildings (never in walls) and
+slowly burns about 10% of your stored wood, food and gold while it burns. Plague lasts 20 seconds and kills 1-3 of
+your units chosen at random (at least one unit always survives). Rain is only visual and has no gameplay effect.
+
+## rule_disaster_response_v1
+Fire response: all of your workers automatically stop working and run to the burning building; with at least one
+worker at the building the fire is out after 12 seconds, without workers it burns out five times slower and keeps
+burning resources. Firefighting workers cannot take other orders until the fire is out. There is no repair action:
+if the building is destroyed, rebuild it. Plague response: there is no cure, healing building or quarantine;
+replace the lost units by training new ones and keep enough workers so the economy recovers.
 
 ## strategy_economy_v1
 Economy strategy: keep the Town Center training Workers early, spread workers across wood, food and gold,

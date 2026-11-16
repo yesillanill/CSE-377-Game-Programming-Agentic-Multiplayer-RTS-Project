@@ -1,7 +1,8 @@
 @echo off
 REM Starts the AI gateway for the RTS AI Commander on http://127.0.0.1:8765
 REM First run creates ai\.venv and installs requirements. Ollama must be running with llama3.1:8b pulled.
-REM The game runs this automatically (hidden) when the Game scene starts; double-clicking it is optional.
+REM The game now starts the gateway itself (AiServiceLauncher + StreamingAssets/ai_services.json); this script is for manual use.
+REM First run: install the CUDA build of torch BEFORE requirements (see README), otherwise laya pulls the CPU-only torch.
 setlocal
 cd /d "%~dp0"
 

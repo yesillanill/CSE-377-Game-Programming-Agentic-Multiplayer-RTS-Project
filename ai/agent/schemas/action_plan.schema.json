@@ -23,7 +23,7 @@
       "properties": {
         "action_type": {"enum": ["TRAIN_UNIT", "BUILD", "MOVE_GROUP", "RESEARCH", "ATTACK", "GATHER"]},
         "unit_type": {"enum": ["Worker", "Spearman", "Archer", "Cavalry"]},
-        "building_type": {"enum": ["House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower"]},
+        "building_type": {"enum": ["House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm"]},
         "tech_line": {"enum": ["weapon", "armor", "wall"]},
         "count": {"type": "integer", "minimum": 1, "maximum": 20},
         "target_zone": {"enum": ["NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast"]},

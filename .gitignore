@@ -119,3 +119,14 @@ ai/logs/
 *.pyc
 
 /docs/
+
+# AI services: secrets, model caches, local logs (never committed)
+.env
+**/.env
+.venv/
+ai/hf_cache/
+ai/models/
+**/.cache/
+**/.pytest_cache/
+ai/logs/*.jsonl
+evaluation/*.log

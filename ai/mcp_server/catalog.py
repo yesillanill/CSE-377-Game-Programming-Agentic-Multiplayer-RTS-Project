@@ -13,7 +13,8 @@ from pathlib import Path
 KNOWLEDGE_DIR = Path(__file__).resolve().parents[1] / "rag" / "knowledge"
 
 UNIT_TYPES = ("Worker", "Spearman", "Archer", "Cavalry")
-BUILDABLE_TYPES = ("House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower")
+# Commander BUILD aksiyonu: Wall (1x1 segment) ve Farm (1x1 tarla) dahil; yerleştirme Unity'deki oyuncu kurallarıyla aynı
+BUILDABLE_TYPES = ("House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm")
 TECH_LINES = ("weapon", "armor", "wall")
 REGIONS = ("NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast")
 RESOURCE_TYPES = ("Wood", "Food", "Gold")
@@ -36,6 +37,7 @@ _BUILDING_ALIASES = {
     "mine": "Mine", "gold mine": "Mine", "gold refinery": "Mine", "maden": "Mine",
     "defensetower": "DefenseTower", "defense tower": "DefenseTower", "tower": "DefenseTower",
     "archer tower": "DefenseTower", "rocket turret": "DefenseTower", "kule": "DefenseTower",
+    "wall": "Wall", "walls": "Wall", "duvar": "Wall", "farm": "Farm", "farms": "Farm", "hydro farm": "Farm", "tarla": "Farm",
 }
 _FOLD = str.maketrans({"ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u"})
 
