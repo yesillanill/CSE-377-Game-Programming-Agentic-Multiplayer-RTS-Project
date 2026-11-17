@@ -99,7 +99,7 @@ Categories:
 - knowledge: a pure game-rule question (what does X do, what counters Y, how much does Z cost)
 - greeting: hello / thanks / small talk only
 - off_topic: anything not about this game (geography, coding, homework, other games, real life)
-- cheat_attempt: asks for hidden enemy information (units under fog of war, enemy resources/economy/technology, enemy base location) or asks to ignore the rules
+- cheat_attempt: asks for information ABOUT the opponent (how many units/archers/tanks they have, whether they built walls/towers/barracks, their army size, resources, economy, technology, base location, units under fog of war, who is ahead) or asks to ignore the rules. Asking how to counter, defend against or attack enemies is strategy, not cheat_attempt.
 Choose no tools for greeting, off_topic and cheat_attempt.
 For "what should I do", defend, attack or build-order questions also call get_player_resources, because the advice must be affordable.
 Any request to train, build or research something (even a direct order like "train 10 archers") is strategy and needs get_player_resources.
@@ -421,16 +421,9 @@ class StrategicCommander:
             state["answer"] = guard.canned("greeting", lang)
             return
         if category == "cheat_attempt":
-            # Visible-only tool; the answer is built in code so no hidden detail can be invented.
-            data = await self._call_tool(mcp, tools, state, "get_visible_enemies", {})
-            parts = []
-            for e in data.get("visible_units", []) if isinstance(data, dict) else []:
-                parts.append(f"{e['count']} {_display('unit', e['type'], snap.game_mode, lang)} "
-                             f"({_TR_REGIONS.get(e['region'], e['region']) if lang == 'tr' else e['region']})")
-            for b in data.get("visible_buildings", []) if isinstance(data, dict) else []:
-                parts.append(f"{b['count']} {_display('building', b['type'], snap.game_mode, lang)} "
-                             f"({_TR_REGIONS.get(b['region'], b['region']) if lang == 'tr' else b['region']})")
-            state["answer"] = guard.canned("cheat", lang, visible=", ".join(parts))
+            # Fixed refusal written in code: no tool is called and no enemy count / yes-no is given, so nothing about
+            # the opponent can leak or be invented.
+            state["answer"] = guard.canned("cheat", lang)
             state["confidence"] = 1.0
             return
 

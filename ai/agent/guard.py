@@ -71,17 +71,53 @@ _CHEAT_PATTERNS = [
     r"(sis(in)? (altinda|arkasinda)|savas sisi|gizli (birim|dusman|us)|gorunmeyen|haritayi (ac|goster)|her seyi gor)",
 ]
 
+# Questions about the opponent's units / buildings / walls / army size / standing ("rakibin kaç okçusu var?",
+# "rakip duvarları ördü mü?", "does the enemy have tanks?", "who is ahead?"). The Commander never answers these, even
+# from visible units: a count or a yes/no would either leak or invent opponent state. Tactical questions about enemies
+# ("düşman süvarilerine karşı ne yapmalıyım?", "enemy cavalry is attacking my base") stay allowed.
+_ENEMY_TR = r"\b(rakibin|rakiplerin|rakipte|rakiplerde|rakipler|rakip|dusmanin|dusmanlarin|dusmanda|dusmanlar|dusman)\b"
+_ENEMY_EN = r"\b(the |my |your )?(enemy|enemies|opponent|opponents|rival|other player)\b"
+_INTEL_OBJ_TR = (r"(okcu|mizrakci|piyade|suvari|tank|keskin nisanci|isci|muhendis|asker|birlik|birim|ordu|kisla|ahir|"
+                 r"demirci|kule|duvar|ev|maden|tarla|bina|us|sehir merkez|yukseltme|savunma)\w*")
+_INTEL_OBJ_EN = (r"(archers?|spearm[ae]n|cavalry|tanks?|snipers?|marines?|knights?|workers?|villagers?|engineers?|soldiers?|"
+                 r"troops?|units?|army|armies|barracks|stables?|blacksmiths?|towers?|turrets?|walls?|houses?|mines?|farms?|"
+                 r"buildings?|armory|vehicle bay|tech lab|defen[cs]es?)")
+_INTEL_PATTERNS = [
+    # TR count: "rakibin kaç okçusu var", "düşmanın ordusu ne kadar büyük" (not "rakibe karşı kaç mızrakçı üreteyim")
+    _ENEMY_TR + r"\W+(?!karsi)(\w+\W+){0,2}(kac|ne kadar|sayisi|sayi)\b",
+    # TR count, question word first: "kaç tane düşman okçusu var"
+    r"\b(kac|ne kadar)\W+(tane\W+)?" + _ENEMY_TR + r"\W+" + _INTEL_OBJ_TR,
+    # TR yes/no about opponent state: "rakibin tankı var mı", "rakip duvarları ördü mü", "düşman kışla kurdu mu"
+    _ENEMY_TR + r"\W+(\w+\W+){0,2}" + _INTEL_OBJ_TR + r"\W+(\w+\W+){0,2}(var ?m[iu]|yok ?m[iu]|\w*[dt][iu] ?m[iu]|\w*yor ?m[iu])\b",
+    # TR standing: "rakip mi önde ben mi", "düşman benden güçlü mü", "kim kazanıyor"
+    _ENEMY_TR + r"\W+(mi\W+)?(\w+\W+){0,1}(onde|geride|guclu|zayif|kazaniyor|kaybediyor)\w*",
+    r"\b(kim|hangimiz) (onde|kazaniyor|daha guclu)",
+    # EN count: "how many archers does the enemy have", "how many units has the opponent got"
+    r"\bhow (many|much)\W+(\w+\W+){0,3}(does|do|did|has|have|is|are)\W+" + _ENEMY_EN,
+    # EN yes/no: "does the enemy have tanks", "did the opponent build walls", "has the enemy built a barracks"
+    r"\b(does|do|did|has|have|is|are)\W+" + _ENEMY_EN + r"\W+(\w+\W+){0,1}(have|has|got|own|build|built|building|make|made|"
+    r"train|trained|training|research|researched|wall|walled)\b",
+    # EN: "enemy's army size", "opponent's archer count"
+    _ENEMY_EN + r"('s|s')?\W+(\w+\W+){0,1}(army size|unit count|" + _INTEL_OBJ_EN + r"\W*(count|number|size))",
+    r"\b(number|count|amount) of\W+(\w+\W+){0,1}" + _ENEMY_EN,
+    # EN standing: "is the enemy ahead", "who is winning", "is my opponent stronger than me"
+    r"\b(is|are)\W+" + _ENEMY_EN + r"\W+(\w+\W+){0,1}(ahead|winning|losing|stronger|weaker|behind)\b",
+    r"\bwho('s| is) (ahead|winning|stronger)",
+]
+
 
 def precheck(text: str) -> dict:
     """Code-level classification of the raw player message (independent from the model)."""
     t = fold(text)
     injection = any(re.search(p, t) for p in _INJECTION_PATTERNS)
     cheat = any(re.search(p, t) for p in _CHEAT_PATTERNS)
+    intel = any(re.search(p, t) for p in _INTEL_PATTERNS)
     words = _words(text)
     greeting_words = {"merhaba", "selam", "selamlar", "hello", "hi", "hey", "thanks", "thank", "tesekkurler",
                       "tesekkur", "sagol", "sagolun", "gunaydin", "iyi", "aksamlar", "naber", "nasilsin"}
     greeting = 0 < len(words) <= 4 and any(w in greeting_words for w in words)
-    return {"injection": injection, "cheat": cheat or injection, "greeting": greeting, "too_long": len(text or "") > 400}
+    return {"injection": injection, "cheat": cheat or intel or injection, "opponent_intel": intel, "greeting": greeting,
+            "too_long": len(text or "") > 400}
 
 
 # ----------------------------------------------------------------------------------------------- canned replies
@@ -100,16 +136,15 @@ def canned(kind: str, lang: str, **kw) -> str:
                 "Hello Commander! Ask me about your resources, army, visible enemies or the game rules. "
                 "For example: \"What should I do against the cavalry in the north?\"")
     if kind == "cheat":
-        visible = kw.get("visible") or ""
+        # Never lists or counts enemy units/buildings: any number here would answer the question it refuses.
         if tr:
-            head = ("Rakibin gizli bilgilerine (sis altındaki birimler, kaynakları, teknolojisi, üssünün yeri) erişimim yok; "
-                    "yalnızca şu an senin gördüğün bilgilerle akıl yürütebilirim.")
-            body = f" Şu an görünen düşmanlar: {visible}." if visible else " Şu an görünen bir düşman yok."
-            return head + body + " Daha fazlasını öğrenmek için keşif birimi gönderebilirsin."
-        head = ("I cannot access hidden opponent information (units under fog of war, their resources, technology "
-                "or base location); I can only reason from what you can currently see.")
-        body = f" Currently visible enemies: {visible}." if visible else " No enemies are visible right now."
-        return head + body + " Send a scout to reveal more of the map."
+            return ("Rakip hakkındaki sorulara cevap veremem: rakibin birlik sayılarını, binalarını, duvarlarını, "
+                    "kaynaklarını, teknolojisini veya üssünün yerini paylaşmam. Rakibi görmek için keşif birimi "
+                    "gönderebilirsin. Kendi ordun, ekonomin, oyun kuralları ya da gördüğün düşmanlara karşı ne yapman "
+                    "gerektiği hakkında soru sorabilirsin.")
+        return ("I can't answer questions about the opponent: I don't share their unit counts, buildings, walls, "
+                "resources, technology or base location. Send a scout if you want to see them. You can ask about your "
+                "own army and economy, the game rules, or how to deal with enemies you can see.")
     if kind == "llm_down":
         return ("AI Komutan şu an yanıt veremiyor (yerel dil modeli çalışmıyor). Ollama'nın açık olduğundan emin ol."
                 if tr else
