@@ -1,3 +1,0 @@
-# Test runner only (not needed to play). pytest runs the existing unittest suites and the new pytest suites.
--r requirements.txt
-pytest>=8

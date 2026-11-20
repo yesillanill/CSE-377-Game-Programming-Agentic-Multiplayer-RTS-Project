@@ -7,8 +7,8 @@ and a single-player **Play vs AI** mode whose opponent bot uses the **Laya** dec
 | Folder | Content |
 |---|---|
 | `UnityRTS/` | Unity project |
-| `ai/` | AI gateway, custom MCP server, agent, RAG knowledge base, Laya decision layer (`ai/decision`), tests |
-| `evaluation/` | evaluation prompts, snapshots, runner, results, security tests, `laya_benchmark.py` |
+| `ai/` | AI gateway, custom MCP server, agent, RAG knowledge base, Laya decision layer (`ai/decision`) |
+| `evaluation/` | evaluation prompts, snapshots, runners, result summaries (`summary.md` + baseline), security test report, `laya_benchmark.py`; raw CSV/JSONL outputs are regenerated locally and not committed |
 | `docs/` | `architecture.md`, `setup.md` |
 
 ## Python environment (ai/.venv)
@@ -17,7 +17,7 @@ and a single-player **Play vs AI** mode whose opponent bot uses the **Laya** dec
 2. **Install the CUDA build of PyTorch first** from https://pytorch.org/get-started/locally/, e.g.
    `ai\.venv\Scripts\python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cu130`
    (a plain `pip install -r requirements.txt` on an empty venv would pull the CPU-only torch as a dependency of laya).
-3. Then: `ai\.venv\Scripts\python.exe -m pip install -r ai\requirements.txt` (tests: `-r ai\requirements-dev.txt`).
+3. Then: `ai\.venv\Scripts\python.exe -m pip install -r ai\requirements.txt`
 4. `ollama pull llama3.1:8b`
 
 The first gateway start downloads the Laya `multilingual` checkpoint (~1.3 GB, Hugging Face cache in
@@ -33,7 +33,7 @@ Manual start (if needed), one line from the repo root:
 
     cd ai && .venv\Scripts\python.exe -m gateway
 
-Tests: `cd ai && .venv\Scripts\python.exe -m pytest tests -q` · Laya benchmark: `cd ai && .venv\Scripts\python.exe ..\evaluation\laya_benchmark.py`
+Laya benchmark: `cd ai && .venv\Scripts\python.exe ..\evaluation\laya_benchmark.py`
 
 ## VsAI bot decisions (Laya + heuristic)
 
