@@ -132,13 +132,8 @@ ai/logs/*.jsonl
 evaluation/*.log
 
 # ---------------------------------------------------------------------------
-# Tests: kept locally only, not versioned
+# Tests: test code is versioned (ai/tests, UnityRTS/Assets/Tests); only runner outputs are ignored
 # ---------------------------------------------------------------------------
-ai/tests/
-ai/requirements-dev.txt
-**/conftest.py
-**/test_*.py
-**/*_test.py
 **/[Tt]est[Rr]esults/
 **/TestResults*.xml
 *.trx
