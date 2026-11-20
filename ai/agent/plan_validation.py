@@ -149,10 +149,21 @@ def precheck_actions(actions: list[dict], snap: SafeSnapshot) -> list[str]:
             demolishable[b.type] = demolishable.get(b.type, 0) + free
     maintenance_workers = workers
 
-    def pay(cost: dict) -> str:
+    # Units already waiting in the training queues, per producer type (Building.MaxTrainingQueueSize per building)
+    queued: dict[str, int] = {}
+    for b in snap.own_buildings:
+        queued[b.type] = queued.get(b.type, 0) + b.queued_units
+
+    def shortage(cost: dict) -> str:
         short = {k: cost[k] - res[k] for k in cost if cost[k] > res[k]}
         if short:
             return "Not enough resources (" + ", ".join(f"{v} {k}" for k, v in short.items()) + " missing)"
+        return ""
+
+    def pay(cost: dict) -> str:
+        problem = shortage(cost)
+        if problem:
+            return problem
         for k in cost:
             res[k] -= cost[k]
         return ""
@@ -162,18 +173,25 @@ def precheck_actions(actions: list[dict], snap: SafeSnapshot) -> list[str]:
         t = a["action_type"]
         w = ""
         if t == "TRAIN_UNIT":
+            # Mirror of AiActionRules TRAIN_UNIT + AiPlanExecutor.Train: the FULL count is validated (building, resources,
+            # population); then as many units as the queues have room for are trained (partial = applied, only the
+            # queued units are paid). Only when every queue is full is the item rejected ("Training queue is full").
             producer = catalog.producer_of(a["unit_type"])
             n = completed.get(producer, 0)
+            free_slots = max(0, n * MAX_TRAINING_QUEUE - queued.get(producer, 0))
             if n == 0:
                 w = f"Required building missing: {producer}"
-            elif a["count"] > n * MAX_TRAINING_QUEUE:
-                w = f"Training queue is full (max {MAX_TRAINING_QUEUE} per {producer})"
+            elif shortage(catalog.cost_of("unit", a["unit_type"], a["count"])):
+                w = shortage(catalog.cost_of("unit", a["unit_type"], a["count"]))
             elif a["count"] > pop_free:
                 w = f"Population limit reached ({pop_free} free)"
+            elif free_slots == 0:
+                w = f"Training queue is full (max {MAX_TRAINING_QUEUE} per {producer})"
             else:
-                w = pay(catalog.cost_of("unit", a["unit_type"], a["count"]))
-                if not w:
-                    pop_free -= a["count"]
+                trained = min(a["count"], free_slots)
+                pay(catalog.cost_of("unit", a["unit_type"], trained))
+                pop_free -= trained
+                queued[producer] = queued.get(producer, 0) + trained
         elif t == "BUILD":
             w = "No Worker available to build" if workers == 0 else pay(catalog.cost_of("building", a["building_type"]))
         elif t == "RESEARCH":

@@ -40,6 +40,7 @@ Scouting with a fast unit (Cavalry) reveals more of the map.
 Combat: units automatically attack visible enemies in range. Damage = attacker damage x weapon upgrade bonus
 x 2 if the attacker counters the target, reduced by the target's armor upgrade (10-40%). Units die at 0 HP.
 Ranged Archers (range 5) can hit melee units before they arrive. Workers are weak (3 damage, 40 HP).
+Sci-Fi mode: every unit has 1.5x health and damage (Marine 120 HP, Engineer 60 HP).
 
 ## rule_towers_v1
 Defense towers: Archer Tower (Medieval) and Rocket Turret (Sci-Fi) cost 100 gold and must be manned by one

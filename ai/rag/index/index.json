@@ -2548,7 +2548,7 @@
   {
    "source_id": "rule_combat_v1",
    "kind": "rule",
-   "text": "Combat: units automatically attack visible enemies in range. Damage = attacker damage x weapon upgrade bonus x 2 if the attacker counters the target, reduced by the target's armor upgrade (10-40%). Units die at 0 HP. Ranged Archers (range 5) can hit melee units before they arrive. Workers are weak (3 damage, 40 HP).",
+   "text": "Combat: units automatically attack visible enemies in range. Damage = attacker damage x weapon upgrade bonus x 2 if the attacker counters the target, reduced by the target's armor upgrade (10-40%). Units die at 0 HP. Ranged Archers (range 5) can hit melee units before they arrive. Workers are weak (3 damage, 40 HP). Sci-Fi mode: every unit has 1.5x health and damage (Marine 120 HP, Engineer 60 HP).",
    "tokens": [
     "rule",
     "combat",
@@ -2601,6 +2601,24 @@
     "3",
     "damage",
     "40",
+    "hp",
+    "sci",
+    "fi",
+    "mode",
+    "every",
+    "unit",
+    "has",
+    "1",
+    "5x",
+    "health",
+    "damage",
+    "spearman",
+    "marine",
+    "120",
+    "hp",
+    "worker",
+    "engineer",
+    "60",
     "hp"
    ]
   },

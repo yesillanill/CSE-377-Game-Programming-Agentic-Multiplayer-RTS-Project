@@ -167,6 +167,37 @@ class PlanTests(unittest.TestCase):
         self.assertIn("Stable", warnings[2])
         self.assertIn("Blacksmith", warnings[3])
 
+    def _rich_snapshot(self, barracks_queue: int):
+        data = snapshot().model_dump()
+        data["resources"] = {"wood": 2000, "food": 2000, "gold": 2000}
+        data["population"] = {"current": 5, "max": 60, "queued": barracks_queue}
+        for b in data["own_buildings"]:
+            if b["type"] == "Barracks":
+                b["count"], b["under_construction"], b["queued_units"] = 1, 0, barracks_queue
+        return type(snapshot()).model_validate(data)
+
+    def test_precheck_train_more_than_the_queue_holds_is_partial_like_unity(self):
+        # Unity (AiPlanExecutor.Train) queues as many as fit (5 per Barracks) and reports the item as applied
+        snap = self._rich_snapshot(barracks_queue=0)
+        plan, _ = build_plan("p", 0.5, [
+            {"action_type": "TRAIN_UNIT", "unit_type": "Spearman", "count": 8, "reason": "partial"},
+            {"action_type": "TRAIN_UNIT", "unit_type": "Archer", "count": 1, "reason": "queue now full"},
+        ])
+        warnings = precheck_actions(plan["actions"], snap)
+        self.assertEqual(warnings[0], "", "8 Spearmen with one Barracks: 5 are queued (partial, not invalid)")
+        self.assertIn("Training queue is full", warnings[1], "the first item filled the only Barracks queue")
+
+    def test_precheck_train_rejected_only_when_every_queue_is_full(self):
+        snap = self._rich_snapshot(barracks_queue=5)
+        plan, _ = build_plan("p", 0.5, [{"action_type": "TRAIN_UNIT", "unit_type": "Spearman", "count": 1, "reason": "full"}])
+        self.assertIn("Training queue is full", precheck_actions(plan["actions"], snap)[0])
+
+    def test_precheck_train_validates_resources_for_the_full_count(self):
+        # GameActionValidator.ValidateTrainUnit checks the whole count before anything is queued
+        snap = snapshot()  # 180 food: 3 Spearmen affordable, 8 are not
+        plan, _ = build_plan("p", 0.5, [{"action_type": "TRAIN_UNIT", "unit_type": "Spearman", "count": 8, "reason": "x"}])
+        self.assertIn("Not enough resources", precheck_actions(plan["actions"], snap)[0])
+
 
 if __name__ == "__main__":
     unittest.main()
