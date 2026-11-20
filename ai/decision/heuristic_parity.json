@@ -556,6 +556,449 @@
      "choice": "barracks"
     }
    ]
+  },
+  {
+   "name": "wounded_army_health_center",
+   "request": {
+    "match_id": "parity",
+    "game_mode": "Medieval",
+    "game_time_seconds": 300,
+    "resources": {
+     "wood": 200,
+     "food": 200,
+     "gold": 100
+    },
+    "population": {
+     "current": 13,
+     "max": 25
+    },
+    "combat_units": 5,
+    "idle_workers": 0,
+    "weapon_level": 0,
+    "armor_level": 0,
+    "own_units": [
+     {
+      "type": "Worker",
+      "count": 8
+     },
+     {
+      "type": "Spearman",
+      "count": 3
+     },
+     {
+      "type": "Archer",
+      "count": 2
+     }
+    ],
+    "own_buildings": [
+     {
+      "type": "TownCenter",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "Barracks",
+      "count": 1,
+      "under_construction": 0
+     }
+    ],
+    "researched": [],
+    "visible_enemies": [],
+    "recent_events": [],
+    "wounded_units": 3
+   },
+   "expected": [
+    {
+     "id": "strategy",
+     "choice": "economy"
+    },
+    {
+     "id": "next_unit",
+     "choice": "worker"
+    },
+    {
+     "id": "threat_level",
+     "choice": "low"
+    },
+    {
+     "id": "attack_now",
+     "choice": "no"
+    },
+    {
+     "id": "build_next",
+     "choice": "health_center"
+    }
+   ]
+  },
+  {
+   "name": "wounded_without_barracks",
+   "request": {
+    "match_id": "parity",
+    "game_mode": "Medieval",
+    "game_time_seconds": 300,
+    "resources": {
+     "wood": 200,
+     "food": 200,
+     "gold": 100
+    },
+    "population": {
+     "current": 8,
+     "max": 25
+    },
+    "combat_units": 0,
+    "idle_workers": 0,
+    "weapon_level": 0,
+    "armor_level": 0,
+    "own_units": [
+     {
+      "type": "Worker",
+      "count": 8
+     }
+    ],
+    "own_buildings": [
+     {
+      "type": "TownCenter",
+      "count": 1,
+      "under_construction": 0
+     }
+    ],
+    "researched": [],
+    "visible_enemies": [],
+    "recent_events": [],
+    "wounded_units": 3
+   },
+   "expected": [
+    {
+     "id": "strategy",
+     "choice": "economy"
+    },
+    {
+     "id": "next_unit",
+     "choice": "worker"
+    },
+    {
+     "id": "threat_level",
+     "choice": "low"
+    },
+    {
+     "id": "attack_now",
+     "choice": "no"
+    },
+    {
+     "id": "build_next",
+     "choice": "barracks"
+    }
+   ]
+  },
+  {
+   "name": "health_center_exists",
+   "request": {
+    "match_id": "parity",
+    "game_mode": "Medieval",
+    "game_time_seconds": 300,
+    "resources": {
+     "wood": 200,
+     "food": 200,
+     "gold": 100
+    },
+    "population": {
+     "current": 13,
+     "max": 25
+    },
+    "combat_units": 5,
+    "idle_workers": 0,
+    "weapon_level": 0,
+    "armor_level": 0,
+    "own_units": [
+     {
+      "type": "Worker",
+      "count": 8
+     },
+     {
+      "type": "Spearman",
+      "count": 3
+     },
+     {
+      "type": "Archer",
+      "count": 2
+     }
+    ],
+    "own_buildings": [
+     {
+      "type": "TownCenter",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "Barracks",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "HealthCenter",
+      "count": 1,
+      "under_construction": 0
+     }
+    ],
+    "researched": [],
+    "visible_enemies": [],
+    "recent_events": [],
+    "wounded_units": 3
+   },
+   "expected": [
+    {
+     "id": "strategy",
+     "choice": "economy"
+    },
+    {
+     "id": "next_unit",
+     "choice": "worker"
+    },
+    {
+     "id": "threat_level",
+     "choice": "low"
+    },
+    {
+     "id": "attack_now",
+     "choice": "no"
+    },
+    {
+     "id": "build_next",
+     "choice": "none"
+    }
+   ]
+  },
+  {
+   "name": "repair_after_fire",
+   "request": {
+    "match_id": "parity",
+    "game_mode": "Medieval",
+    "game_time_seconds": 600,
+    "resources": {
+     "wood": 300,
+     "food": 300,
+     "gold": 150
+    },
+    "population": {
+     "current": 16,
+     "max": 30
+    },
+    "combat_units": 6,
+    "idle_workers": 0,
+    "wounded_units": 0,
+    "weapon_level": 0,
+    "armor_level": 0,
+    "own_units": [
+     {
+      "type": "Worker",
+      "count": 10
+     },
+     {
+      "type": "Spearman",
+      "count": 4
+     },
+     {
+      "type": "Archer",
+      "count": 2
+     }
+    ],
+    "own_buildings": [
+     {
+      "type": "TownCenter",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "Barracks",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "House",
+      "count": 3,
+      "under_construction": 0
+     }
+    ],
+    "researched": [],
+    "visible_enemies": [],
+    "recent_events": [],
+    "damaged_buildings": 1,
+    "repair_cost": {
+     "wood": 25,
+     "food": 0,
+     "gold": 0
+    }
+   },
+   "expected": [
+    {
+     "id": "maintenance",
+     "choice": "repair"
+    },
+    {
+     "id": "threat_level",
+     "choice": "low"
+    }
+   ]
+  },
+  {
+   "name": "demolish_under_siege",
+   "request": {
+    "match_id": "parity",
+    "game_mode": "Medieval",
+    "game_time_seconds": 600,
+    "resources": {
+     "wood": 300,
+     "food": 300,
+     "gold": 150
+    },
+    "population": {
+     "current": 16,
+     "max": 30
+    },
+    "combat_units": 6,
+    "idle_workers": 0,
+    "wounded_units": 0,
+    "weapon_level": 0,
+    "armor_level": 0,
+    "own_units": [
+     {
+      "type": "Worker",
+      "count": 10
+     },
+     {
+      "type": "Spearman",
+      "count": 4
+     },
+     {
+      "type": "Archer",
+      "count": 2
+     }
+    ],
+    "own_buildings": [
+     {
+      "type": "TownCenter",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "Barracks",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "House",
+      "count": 3,
+      "under_construction": 0
+     }
+    ],
+    "researched": [],
+    "visible_enemies": [
+     {
+      "type": "Cavalry",
+      "count": 6,
+      "region": "West"
+     }
+    ],
+    "recent_events": [
+     {
+      "type": "UNDER_ATTACK",
+      "region": "West",
+      "seconds_ago": 8,
+      "detail": ""
+     },
+     {
+      "type": "UNDER_ATTACK",
+      "region": "West",
+      "seconds_ago": 30,
+      "detail": ""
+     }
+    ],
+    "damaged_buildings": 2,
+    "critical_buildings": 1,
+    "repair_cost": {
+     "wood": 40,
+     "food": 0,
+     "gold": 0
+    }
+   },
+   "expected": [
+    {
+     "id": "maintenance",
+     "choice": "demolish"
+    },
+    {
+     "id": "threat_level",
+     "choice": "high"
+    }
+   ]
+  },
+  {
+   "name": "repair_unaffordable",
+   "request": {
+    "match_id": "parity",
+    "game_mode": "Medieval",
+    "game_time_seconds": 600,
+    "resources": {
+     "wood": 300,
+     "food": 300,
+     "gold": 150
+    },
+    "population": {
+     "current": 16,
+     "max": 30
+    },
+    "combat_units": 6,
+    "idle_workers": 0,
+    "wounded_units": 0,
+    "weapon_level": 0,
+    "armor_level": 0,
+    "own_units": [
+     {
+      "type": "Worker",
+      "count": 10
+     },
+     {
+      "type": "Spearman",
+      "count": 4
+     },
+     {
+      "type": "Archer",
+      "count": 2
+     }
+    ],
+    "own_buildings": [
+     {
+      "type": "TownCenter",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "Barracks",
+      "count": 1,
+      "under_construction": 0
+     },
+     {
+      "type": "House",
+      "count": 3,
+      "under_construction": 0
+     }
+    ],
+    "researched": [],
+    "visible_enemies": [],
+    "recent_events": [],
+    "damaged_buildings": 1,
+    "repair_cost": {
+     "wood": 500,
+     "food": 0,
+     "gold": 0
+    }
+   },
+   "expected": [
+    {
+     "id": "maintenance",
+     "choice": "none"
+    }
+   ]
   }
  ]
 }

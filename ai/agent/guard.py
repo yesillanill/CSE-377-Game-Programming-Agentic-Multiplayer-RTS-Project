@@ -78,10 +78,10 @@ _CHEAT_PATTERNS = [
 _ENEMY_TR = r"\b(rakibin|rakiplerin|rakipte|rakiplerde|rakipler|rakip|dusmanin|dusmanlarin|dusmanda|dusmanlar|dusman)\b"
 _ENEMY_EN = r"\b(the |my |your )?(enemy|enemies|opponent|opponents|rival|other player)\b"
 _INTEL_OBJ_TR = (r"(okcu|mizrakci|piyade|suvari|tank|keskin nisanci|isci|muhendis|asker|birlik|birim|ordu|kisla|ahir|"
-                 r"demirci|kule|duvar|ev|maden|tarla|bina|us|sehir merkez|yukseltme|savunma)\w*")
+                 r"demirci|kule|duvar|ev|maden|tarla|bina|us|sehir merkez|saglik merkez|revir|hastane|sifahane|yukseltme|savunma)\w*")
 _INTEL_OBJ_EN = (r"(archers?|spearm[ae]n|cavalry|tanks?|snipers?|marines?|knights?|workers?|villagers?|engineers?|soldiers?|"
                  r"troops?|units?|army|armies|barracks|stables?|blacksmiths?|towers?|turrets?|walls?|houses?|mines?|farms?|"
-                 r"buildings?|armory|vehicle bay|tech lab|defen[cs]es?)")
+                 r"buildings?|armory|vehicle bay|tech lab|health cent(er|re)s?|med ?bays?|hospitals?|defen[cs]es?)")
 _INTEL_PATTERNS = [
     # TR count: "rakibin kaç okçusu var", "düşmanın ordusu ne kadar büyük" (not "rakibe karşı kaç mızrakçı üreteyim")
     _ENEMY_TR + r"\W+(?!karsi)(\w+\W+){0,2}(kac|ne kadar|sayisi|sayi)\b",

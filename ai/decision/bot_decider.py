@@ -26,8 +26,9 @@ from decision.laya_service import choice_options
 Region = Literal["NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast", "Unknown"]
 UnitName = Literal["Worker", "Spearman", "Archer", "Cavalry"]
 EnemyType = Literal["Worker", "Spearman", "Archer", "Cavalry", "TownCenter", "House", "Barracks", "Stable",
-                    "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm"]
-BuildingName = Literal["TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm"]
+                    "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter", "Farm"]
+BuildingName = Literal["TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter",
+                       "Farm"]
 
 MAX_TARGET_ZONES = 6          # keep choice questions small (Laya accuracy drops with many options)
 # State budgets in characters (~3.5 chars per token). English checkpoint: 512 tokens incl. the question head (<= 192)
@@ -85,6 +86,12 @@ class BotDecideRequest(_Strict):
     population: BotPopulation
     combat_units: int = Field(default=0, ge=0, le=10_000)
     idle_workers: int = Field(default=0, ge=0, le=10_000)
+    wounded_units: int = Field(default=0, ge=0, le=10_000)      # own units below the Health Center threshold (30% HP)
+    # Building maintenance (own buildings only): finished, not burning, no job yet; damaged = under 60% HP,
+    # critical = non Town Center under 25% HP with an empty training queue; repair_cost = cost of the most damaged one
+    damaged_buildings: int = Field(default=0, ge=0, le=10_000)
+    critical_buildings: int = Field(default=0, ge=0, le=10_000)
+    repair_cost: BotResources = Field(default_factory=lambda: BotResources(wood=0, food=0, gold=0))
     weapon_level: int = Field(default=0, ge=0, le=3)
     armor_level: int = Field(default=0, ge=0, le=4)
     own_power: float = Field(default=-1.0, ge=-1.0, le=1e12)      # -1: let the gateway compute it
@@ -96,7 +103,8 @@ class BotDecideRequest(_Strict):
     recent_events: list[BotEvent] = Field(default_factory=list, max_length=8)
     # Hard constraints computed by Unity with GameActionValidator (None/absent: the gateway's own checks only)
     allowed_units: list[Literal["worker", "spearman", "archer", "cavalry"]] | None = None
-    allowed_build: list[Literal["none", "house", "farm", "mine", "barracks", "stable", "tower", "wall"]] | None = None
+    allowed_build: list[Literal["none", "house", "farm", "mine", "barracks", "stable", "tower", "wall", "health_center"]] | None = None
+    allowed_maintenance: list[Literal["none", "repair", "demolish"]] | None = None
 
 
 # Option descriptions use the game's own values (costs from GameActionValidator / rag knowledge) so the options are distinct.
@@ -123,6 +131,12 @@ _BUILD_TEXT = {
     "stable": "Stable 120 wood 20 gold: trains cavalry",
     "tower": "Tower 100 gold: manned defense, 12 damage, range 6.5",
     "wall": "Wall 10 wood per segment: blocks the enemy approach",
+    "health_center": "Health Center 100 wood 50 gold: wounded units below 30% HP heal to full there",
+}
+_MAINT_TEXT = {
+    "none": "no repair or demolition now, keep workers on the economy",
+    "repair": "repair the most damaged building with one worker, pay part of its cost, back to full HP",
+    "demolish": "demolish a nearly destroyed building with one worker, get 50% of its cost back before the enemy destroys it",
 }
 _FOCUS_TEXT = {
     "food": "food: workers, soldiers, farm seeds",
@@ -155,9 +169,11 @@ def build_state(req: BotDecideRequest, knowledge: list[str] | None = None, model
     base = (f"Mode {req.game_mode}. Time {int(req.game_time_seconds)}s. "
             f"Resources wood {f['wood']} food {f['food']} gold {f['gold']}. "
             f"Population {f['pop']}/{f['pop_max']}. Workers {f['workers']} idle {f['idle_workers']}. "
-            f"Army spearman {f['army']['Spearman']} archer {f['army']['Archer']} cavalry {f['army']['Cavalry']}. "
+            f"Army spearman {f['army']['Spearman']} archer {f['army']['Archer']} cavalry {f['army']['Cavalry']} "
+            f"wounded {f['wounded']}. "
             f"Buildings barracks {f['barracks']} stable {f['stable']} blacksmith {f['blacksmith']} house {f['house']} "
-            f"farm {f['farm']} mine {f['mine']} tower {f['tower']} wall {f['wall']}. "
+            f"farm {f['farm']} mine {f['mine']} tower {f['tower']} wall {f['wall']} health center {f['health_center']}. "
+            f"Damaged buildings {f['damaged_buildings']} critical {f['critical_buildings']}. "
             f"Upgrades weapon {f['weapon']} armor {f['armor']}. "
             f"Visible enemies: {enemies}. Power ratio: {'unknown' if ratio is None else f'{ratio:.1f}'}. "
             f"Events: {events}.")
@@ -199,6 +215,10 @@ def build_questions(req: BotDecideRequest, cfg: BotConfig | None = None) -> dict
     if len(builds) >= 2:
         questions["build_next"] = {"type": "choice", "instructions": "Which building should the bot construct next?",
                                    "criteria": {b: _BUILD_TEXT[b] for b in builds}}
+    maint = H.candidate_maintenance(f, req.allowed_maintenance)
+    if len(maint) >= 2:
+        questions["maintenance"] = {"type": "choice", "instructions": "Should the bot repair or demolish one of its damaged buildings now?",
+                                    "criteria": {m: _MAINT_TEXT[m] for m in maint}}
     zones = visible_zones(req)
     if len(zones) >= 1:
         totals = {z: sum(e.count for e in req.visible_enemies if e.region == z) for z in zones}
@@ -229,10 +249,11 @@ def blended_decisions(req: BotDecideRequest, laya_decisions: list[dict] | None, 
     """Final decision per question = w * Laya + (1 - w) * heuristic (w = 0 when Laya is unavailable).
     Questions that were not asked (fewer than 2 candidates) are answered by the heuristic alone."""
     zones = visible_zones(req)
-    heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, zones)
+    heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, zones, req.allowed_maintenance)
     laya_by_id = {d["id"]: {o["label"]: o["p"] for o in d["options"]} for d in (laya_decisions or [])}
     out = []
-    for qid in ("strategy", "next_unit", "threat_level", "attack_now", "target_zone", "build_next", "economy_focus"):
+    for qid in ("strategy", "next_unit", "threat_level", "attack_now", "target_zone", "build_next", "economy_focus",
+                "maintenance"):
         h = heur.get(qid)
         if not h:
             continue

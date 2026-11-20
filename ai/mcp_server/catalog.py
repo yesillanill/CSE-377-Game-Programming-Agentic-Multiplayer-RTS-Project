@@ -14,13 +14,18 @@ KNOWLEDGE_DIR = Path(__file__).resolve().parents[1] / "rag" / "knowledge"
 
 UNIT_TYPES = ("Worker", "Spearman", "Archer", "Cavalry")
 # Commander BUILD aksiyonu: Wall (1x1 segment) ve Farm (1x1 tarla) dahil; yerleştirme Unity'deki oyuncu kurallarıyla aynı
-BUILDABLE_TYPES = ("House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm")
+BUILDABLE_TYPES = ("House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter", "Farm")
 TECH_LINES = ("weapon", "armor", "wall")
 REGIONS = ("NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast")
 RESOURCE_TYPES = ("Wood", "Food", "Gold")
 COMBAT_UNIT_TYPES = ("Spearman", "Archer", "Cavalry")
+# REPAIR: hasarlı kendi binası (Town Center dahil, tarla bina değildir); DEMOLISH: Town Center yıkılamaz
+REPAIRABLE_TYPES = ("TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter")
+DEMOLISHABLE_TYPES = tuple(t for t in REPAIRABLE_TYPES if t != "TownCenter")
+DEMOLISH_REFUND_PERCENT = 50   # BuildingMaintenanceRules.DemolishRefundPercent
 # ATTACK hedefi: görünür düşman birim veya bina türü
-TARGET_TYPES = UNIT_TYPES + ("TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall")
+TARGET_TYPES = UNIT_TYPES + ("TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall",
+                             "HealthCenter")
 
 # Display names (both modes, English + Turkish) -> canonical ids. Lower-cased, ASCII folded keys.
 _UNIT_ALIASES = {
@@ -37,7 +42,14 @@ _BUILDING_ALIASES = {
     "mine": "Mine", "gold mine": "Mine", "gold refinery": "Mine", "maden": "Mine",
     "defensetower": "DefenseTower", "defense tower": "DefenseTower", "tower": "DefenseTower",
     "archer tower": "DefenseTower", "rocket turret": "DefenseTower", "kule": "DefenseTower",
+    "healthcenter": "HealthCenter", "health center": "HealthCenter", "health centre": "HealthCenter",
+    "med bay": "HealthCenter", "medbay": "HealthCenter", "medical bay": "HealthCenter", "hospital": "HealthCenter",
+    "clinic": "HealthCenter", "saglik merkezi": "HealthCenter", "revir": "HealthCenter", "hastane": "HealthCenter",
+    "sifahane": "HealthCenter",
     "wall": "Wall", "walls": "Wall", "duvar": "Wall", "farm": "Farm", "farms": "Farm", "hydro farm": "Farm", "tarla": "Farm",
+    # REPAIR hedefi olabilir (BUILD şeması Town Center'ı reddeder)
+    "towncenter": "TownCenter", "town center": "TownCenter", "command center": "TownCenter", "sehir merkezi": "TownCenter",
+    "komuta merkezi": "TownCenter",
 }
 _FOLD = str.maketrans({"ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u"})
 
@@ -117,6 +129,12 @@ def display_name(kind: str, canonical: str, game_mode: str) -> str:
     if game_mode == "SciFi":
         return rec.get("scifi_name") or rec.get("display_name") or canonical
     return rec.get("display_name") or canonical
+
+
+def demolish_refund(building: str) -> dict:
+    """Resources returned when a finished building is demolished: 50% of its build cost, each resource rounded down."""
+    cost = building_record(building)["cost"]
+    return {res: int(cost.get(res, 0)) * DEMOLISH_REFUND_PERCENT // 100 for res in ("wood", "food", "gold")}
 
 
 def cost_of(kind: str, ident: str, count: int = 1, tech_levels: dict | None = None) -> dict:

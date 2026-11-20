@@ -23,7 +23,7 @@ log = logging.getLogger("bot.rag")
 _BUILD_QUERY = {
     "house": "House population cost", "farm": "Farm food plot cost", "mine": "Mine gold income cost",
     "barracks": "Barracks cost trains", "stable": "Stable cavalry cost", "tower": "Archer Tower defense tower cost",
-    "wall": "Wall segment cost",
+    "wall": "Wall segment cost", "health_center": "Health Center healing wounded units cost",
 }
 _UNIT_RECORD = {"Cavalry": "unit_cavalry_v1", "Archer": "unit_archer_v1", "Spearman": "unit_spearman_v1"}
 
@@ -64,11 +64,15 @@ async def enrich(req, index, guard, cfg: BotConfig, session: str, heur: dict | N
         if dominant and dominant in _UNIT_RECORD:          # no visible enemy units -> no counter search
             queries.append((f"{dominant} counter strong weak", _UNIT_RECORD[dominant]))
         if heur is None:
-            heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build)
+            heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, None, req.allowed_maintenance)
         build_dist = heur.get("build_next") or {}
         top_build = H.argmax(build_dist) if build_dist else "none"
         if top_build != "none" and top_build in _BUILD_QUERY:
             queries.append((_BUILD_QUERY[top_build], ""))
+        # Repair / demolish is close to being chosen: add the maintenance rule (cost, refund, one worker)
+        maint_dist = heur.get("maintenance") or {}
+        if maint_dist and H.argmax(maint_dist) != "none":
+            queries.append(("repair demolish building refund worker", "rule_repair_demolish_v1"))
 
         for query, preferred in queries:
             if len(res.texts) >= cfg.max_records:
@@ -81,7 +85,7 @@ async def enrich(req, index, guard, cfg: BotConfig, session: str, heur: dict | N
             sid = hit.get("source_id", "?")
             if sid in res.source_ids:
                 continue
-            text = _short(hit.get("text", ""), cfg.max_chars_per_record, "strong against" if preferred else "")
+            text = _short(hit.get("text", ""), cfg.max_chars_per_record, "strong against" if preferred in _UNIT_RECORD.values() else "")
             if guard is not None and guard.enabled:
                 verdict = await guard.screen_text(text, session, "bot_rag_chunk")
                 if verdict.action == "blocked":

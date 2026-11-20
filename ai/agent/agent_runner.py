@@ -41,10 +41,12 @@ CATEGORIES = ["strategy", "knowledge", "greeting", "off_topic", "cheat_attempt"]
 _TR_NAMES = {
     "Medieval": {"Worker": "İşçi", "Spearman": "Mızrakçı", "Archer": "Okçu", "Cavalry": "Süvari",
                  "TownCenter": "Şehir Merkezi", "House": "Ev", "Barracks": "Kışla", "Stable": "Ahır",
-                 "Blacksmith": "Demirci", "Mine": "Maden", "DefenseTower": "Okçu Kulesi", "Wall": "Duvar", "Farm": "Tarla"},
+                 "Blacksmith": "Demirci", "Mine": "Maden", "DefenseTower": "Okçu Kulesi", "Wall": "Duvar",
+                 "HealthCenter": "Sağlık Merkezi", "Farm": "Tarla"},
     "SciFi": {"Worker": "Mühendis", "Spearman": "Piyade", "Archer": "Keskin Nişancı", "Cavalry": "Tank",
               "TownCenter": "Komuta Merkezi", "House": "Yaşam Modülü", "Barracks": "Cephanelik", "Stable": "Araç Hangarı",
-              "Blacksmith": "Teknoloji Lab.", "Mine": "Altın Rafinerisi", "DefenseTower": "Roket Tareti", "Wall": "Duvar", "Farm": "Tarla"},
+              "Blacksmith": "Teknoloji Lab.", "Mine": "Altın Rafinerisi", "DefenseTower": "Roket Tareti", "Wall": "Duvar",
+              "HealthCenter": "Revir", "Farm": "Tarla"},
 }
 _TR_REGIONS = {"NorthWest": "kuzeybatı", "North": "kuzey", "NorthEast": "kuzeydoğu", "West": "batı", "Center": "merkez",
                "East": "doğu", "SouthWest": "güneybatı", "South": "güney", "SouthEast": "güneydoğu", "Unknown": "bilinmeyen bölge"}
@@ -63,6 +65,7 @@ _EN_NAME_TO_CANONICAL = [
     ("Archer Tower", "building", "DefenseTower"), ("Rocket Turret", "building", "DefenseTower"),
     ("Town Center", "building", "TownCenter"), ("Command Center", "building", "TownCenter"),
     ("Vehicle Bay", "building", "Stable"), ("Tech Lab", "building", "Blacksmith"), ("Gold Refinery", "building", "Mine"),
+    ("Health Center", "building", "HealthCenter"), ("Med Bay", "building", "HealthCenter"),
     ("Spearmen", "unit", "Spearman"), ("Spearman", "unit", "Spearman"), ("Archers", "unit", "Archer"), ("Archer", "unit", "Archer"),
     ("Cavalry", "unit", "Cavalry"), ("Workers", "unit", "Worker"), ("Worker", "unit", "Worker"),
     ("Marines", "unit", "Spearman"), ("Marine", "unit", "Spearman"), ("Snipers", "unit", "Archer"), ("Sniper", "unit", "Archer"),
@@ -85,7 +88,8 @@ def localize_names(text: str, mode: str, lang: str) -> str:
 def _glossary(mode: str, lang: str) -> str:
     units = ", ".join(f"{u} = {_display('unit', u, mode, lang)}" for u in catalog.UNIT_TYPES)
     blds = ", ".join(f"{b} = {_display('building', b, mode, lang)}"
-                     for b in ("TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm"))
+                     for b in ("TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall",
+                               "HealthCenter", "Farm"))
     res = "wood = odun, food = yiyecek, gold = altın" if lang == "tr" else "wood, food, gold"
     return f"Unit names to use in the answer: {units}. Building names: {blds}. Resources: {res}."
 
@@ -106,6 +110,8 @@ Any request to train, build or research something (even a direct order like "tra
 Upgrade/research decisions need get_technology_status AND get_player_resources.
 If the question mentions enemies the player sees, is fighting or is attacked by, or asks to attack, call get_visible_enemies and get_army_status.
 Questions about gathering / idle workers / economy need get_player_resources and get_army_status (idle worker counts).
+Questions about wounded / injured units or healing need get_army_status (wounded and healing counts) and search_game_knowledge.
+Questions about damaged, burning, repairing or demolishing buildings need get_army_status (damaged buildings, repair costs), get_player_resources and search_game_knowledge.
 Available MCP tools:
 {tools}"""
 
@@ -132,10 +138,13 @@ Strict rules:
 5. Write the "answer" in {language_name}, speaking to the player as "you". 2-5 short sentences, plain text, no markdown. {glossary}
 6. Counters (2x damage): Spearman beats Cavalry, Archer beats Spearman, Cavalry beats Archer. To fight visible Cavalry train Spearman, never Archer. Use "countered_by" and "max_affordable_units_now" from the tool results.
 7. "actions": REQUIRED (usually 1-4, at most 8) when the player asks what to do, how to defend/attack/improve, for a plan, or whether they can do something; [] for pure rule questions. The player ticks which items to apply. Use canonical ids in actions:
-   TRAIN_UNIT (unit_type: Worker|Spearman|Archer|Cavalry, count 1-20), BUILD (building_type: House|Barracks|Stable|Blacksmith|Mine|DefenseTower|Wall|Farm; Wall = one 1x1 segment, Farm = one 1x1 plot),
+   TRAIN_UNIT (unit_type: Worker|Spearman|Archer|Cavalry, count 1-20), BUILD (building_type: House|Barracks|Stable|Blacksmith|Mine|DefenseTower|Wall|HealthCenter|Farm; Wall = one 1x1 segment, Farm = one 1x1 plot, HealthCenter = wounded units below 30% HP heal there automatically),
    RESEARCH (tech_line: weapon|armor|wall = next tier), MOVE_GROUP (target_zone: NorthWest|North|NorthEast|West|Center|East|SouthWest|South|SouthEast, optional unit_type),
-   ATTACK (target_zone + count of own combat units 1-20, optional unit_type Spearman|Archer|Cavalry, optional target_type = a visible enemy unit or building type: Worker|Spearman|Archer|Cavalry|TownCenter|House|Barracks|Stable|Blacksmith|Mine|DefenseTower|Wall),
-   GATHER (resource_type: Wood|Food|Gold, count = number of IDLE workers to send, 1-20).
+   ATTACK (target_zone + count of own combat units 1-20, optional unit_type Spearman|Archer|Cavalry, optional target_type = a visible enemy unit or building type: Worker|Spearman|Archer|Cavalry|TownCenter|House|Barracks|Stable|Blacksmith|Mine|DefenseTower|Wall|HealthCenter),
+   GATHER (resource_type: Wood|Food|Gold, count = number of IDLE workers to send, 1-20),
+   REPAIR (building_type: TownCenter|House|Barracks|Stable|Blacksmith|Mine|DefenseTower|Wall|HealthCenter = repair the most damaged one; one worker; costs its repair_cost),
+   DEMOLISH (building_type: House|Barracks|Stable|Blacksmith|Mine|DefenseTower|Wall|HealthCenter; one worker; refunds 50% of the build cost; the Town Center can NEVER be demolished).
+   Every building listed in damaged_buildings CAN be repaired (any type, Barracks and Town Center too): propose one REPAIR per listed type you can afford. Propose DEMOLISH only when the player asks to remove a building or wants its refund - never demolish a damaged building instead of repairing it.
    ATTACK only a target_zone/target_type that get_visible_enemies listed right now; never target hidden or guessed enemies (such an item is rejected).
    If the player asks to attack (or whether to attack) and you advise attacking a visible target, include that ATTACK action with its target_zone, target_type and the attacking unit_type.
    If the player asks to send idle workers to gather, include a GATHER action.
@@ -195,6 +204,14 @@ def _answer_schema(tool_names: list[str]) -> dict:
                     "action_type": {"const": "GATHER"}, "resource_type": {"enum": list(catalog.RESOURCE_TYPES)},
                     "count": {"type": "integer"}, "reason": {"type": "string"}},
                  "required": ["action_type", "resource_type", "count", "reason"]},
+                {"type": "object", "properties": {
+                    "action_type": {"const": "REPAIR"}, "building_type": {"enum": list(catalog.REPAIRABLE_TYPES)},
+                    "reason": {"type": "string"}},
+                 "required": ["action_type", "building_type", "reason"]},
+                {"type": "object", "properties": {
+                    "action_type": {"const": "DEMOLISH"}, "building_type": {"enum": list(catalog.DEMOLISHABLE_TYPES)},
+                    "reason": {"type": "string"}},
+                 "required": ["action_type", "building_type", "reason"]},
             ]}},
             "need_more_tools": {"type": "array", "items": {"enum": tool_names}, "maxItems": 3},
             "knowledge_query": {"type": "string"},

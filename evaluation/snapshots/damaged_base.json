@@ -1,0 +1,32 @@
+{
+  "match_id": "eval-damaged",
+  "game_mode": "Medieval",
+  "ui_language": "tr",
+  "game_time_seconds": 640.0,
+  "map_size": {"x": 64, "y": 64},
+  "base_region": "SouthWest",
+  "resources": {"wood": 180, "food": 220, "gold": 70},
+  "population": {"current": 15, "max": 30, "queued": 0},
+  "own_units": [
+    {"type": "Worker", "display_name": "Worker", "count": 8, "region": "SouthWest", "idle": 2, "wounded": 0, "healing": 0},
+    {"type": "Spearman", "display_name": "Spearman", "count": 4, "region": "SouthWest", "idle": 4, "wounded": 0, "healing": 0},
+    {"type": "Archer", "display_name": "Archer", "count": 3, "region": "SouthWest", "idle": 3, "wounded": 0, "healing": 0}
+  ],
+  "own_buildings": [
+    {"type": "TownCenter", "display_name": "Town Center", "count": 1, "region": "SouthWest",
+     "damaged": 1, "repairing": 0, "demolishing": 0, "min_hp_pct": 45, "repair_cost": {"wood": 55, "food": 0, "gold": 14}},
+    {"type": "House", "display_name": "House", "count": 3, "region": "SouthWest",
+     "damaged": 0, "repairing": 0, "demolishing": 0, "min_hp_pct": 100, "repair_cost": {"wood": 0, "food": 0, "gold": 0}},
+    {"type": "Barracks", "display_name": "Barracks", "count": 1, "region": "SouthWest",
+     "damaged": 1, "repairing": 0, "demolishing": 0, "min_hp_pct": 30, "repair_cost": {"wood": 35, "food": 0, "gold": 0}},
+    {"type": "DefenseTower", "display_name": "Archer Tower", "count": 1, "region": "West",
+     "damaged": 0, "repairing": 0, "demolishing": 0, "min_hp_pct": 100, "repair_cost": {"wood": 0, "food": 0, "gold": 0}}
+  ],
+  "visible_enemies": [],
+  "visible_enemy_buildings": [],
+  "tech": {"weapon_level": 1, "armor_level": 0, "wall_level": 0, "researching": "", "research_progress": 0.0, "researched": ["WeaponUpgrade1"]},
+  "recent_events": [
+    {"type": "DISASTER", "detail": "Fire at TownCenter", "region": "SouthWest", "seconds_ago": 40},
+    {"type": "UNDER_ATTACK", "detail": "", "region": "SouthWest", "seconds_ago": 70}
+  ]
+}

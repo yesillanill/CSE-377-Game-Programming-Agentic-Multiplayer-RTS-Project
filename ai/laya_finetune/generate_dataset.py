@@ -82,7 +82,7 @@ def state_hash(req, model: str) -> str:
 def teacher_row(req, cfg: BotConfig, model: str, knowledge) -> dict:
     """{"state", "questions", "expected"}: exactly what the gateway would send, labelled by the heuristic."""
     questions = bot_decider.build_questions(req, cfg)
-    heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, bot_decider.visible_zones(req))
+    heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, bot_decider.visible_zones(req), req.allowed_maintenance)
     expected = {}
     for qid, spec in questions.items():
         best = H.argmax(heur[qid])

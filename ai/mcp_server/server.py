@@ -100,6 +100,13 @@ def build_server(ctx: SessionContext, index: KnowledgeIndex) -> MCPServer:
         units = [u.model_dump() for u in snap.own_units if include_workers or u.type != "Worker"]
         military = sum(u.count for u in snap.own_units if u.type != "Worker")
         workers = sum(u.count for u in snap.own_units if u.type == "Worker")
+        health_centers = sum(b.count - b.under_construction for b in snap.own_buildings if b.type == "HealthCenter")
+        # Repair / demolish (one worker per job): deterministic summary so the model never guesses costs
+        damaged = [{"type": b.type, "display_name": names("building", b.type), "damaged": b.damaged,
+                    "lowest_hp_pct": b.min_hp_pct, "repair_cost": b.repair_cost.model_dump()}
+                   for b in snap.own_buildings if b.damaged > 0]
+        in_progress = [{"type": b.type, "repairing": b.repairing, "demolishing": b.demolishing}
+                       for b in snap.own_buildings if b.repairing or b.demolishing]
         # Deterministic matchup of own unit types against currently visible enemy types (rulebook counters)
         visible_types = {e.type for e in snap.visible_enemies}
         matchups = {}
@@ -113,6 +120,15 @@ def build_server(ctx: SessionContext, index: KnowledgeIndex) -> MCPServer:
             "units": units,
             "military_total": military,
             "worker_total": workers,
+            # Health Center: units below 30% HP go there automatically when idle and heal to full in a few seconds
+            "wounded_total": sum(u.wounded for u in snap.own_units),
+            "healing_total": sum(u.healing for u in snap.own_units),
+            "health_centers_ready": max(0, health_centers),
+            "damaged_buildings": damaged,
+            "maintenance_in_progress": in_progress,
+            "maintenance_rules": "REPAIR: one worker, pays repair_cost, restores full HP. DEMOLISH: one worker, refunds 50% "
+                                 "of the build cost, never the Town Center. Burning buildings lose HP (not below 25%) and must "
+                                 "be extinguished before repair.",
             "matchups_vs_visible_enemies": matchups,
             "buildings": [b.model_dump() for b in snap.own_buildings],
             "base_region": snap.base_region,

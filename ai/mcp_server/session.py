@@ -18,7 +18,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 UnitName = Literal["Worker", "Spearman", "Archer", "Cavalry"]
-BuildingName = Literal["TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm"]
+BuildingName = Literal["TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter",
+                       "Farm"]
 Region = Literal["NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast", "Unknown"]
 
 MAX_LIST = 64
@@ -46,6 +47,9 @@ class UnitGroup(_Strict):
     count: int = Field(ge=0, le=10_000)
     region: Region = "Unknown"
     idle: int = Field(default=0, ge=0, le=10_000)
+    # Health Center (HealthCenterRules.cs): own units below 30% HP that are not healing yet / units inside or walking there
+    wounded: int = Field(default=0, ge=0, le=10_000)
+    healing: int = Field(default=0, ge=0, le=10_000)
 
 
 class BuildingGroup(_Strict):
@@ -55,6 +59,13 @@ class BuildingGroup(_Strict):
     under_construction: int = Field(default=0, ge=0, le=10_000)
     queued_units: int = Field(default=0, ge=0, le=10_000)
     region: Region = "Unknown"
+    # Repair / demolish (BuildingMaintenanceRules.cs): repairable damaged buildings (not burning, no job yet), jobs running,
+    # lowest HP % of the finished buildings and the repair cost of the most damaged one (the one REPAIR picks)
+    damaged: int = Field(default=0, ge=0, le=10_000)
+    repairing: int = Field(default=0, ge=0, le=10_000)
+    demolishing: int = Field(default=0, ge=0, le=10_000)
+    min_hp_pct: int = Field(default=100, ge=0, le=100)
+    repair_cost: Resources = Field(default_factory=lambda: Resources(wood=0, food=0, gold=0))
 
 
 class EnemyUnitGroup(_Strict):

@@ -199,6 +199,46 @@
     "description": "1x1 wall segment, 10 wood each (5 s to build), drawn by dragging. Walls block movement, so leave a gap/gate for your own units and keep resource paths open. Health depends on the wall tier: Medieval Wood/Stone/Brick = 300/600/1000 HP, Sci-Fi Cement/Iron/Obsidian = 450/900/1500 HP. Upgrading also upgrades existing walls. Walls never catch fire."
   },
   {
+    "id": "building_healthcenter_v1",
+    "type": "building",
+    "name": "HealthCenter",
+    "display_name": "Health Center",
+    "scifi_name": "Med Bay",
+    "aliases": [
+      "health center",
+      "health centre",
+      "healthcenter",
+      "med bay",
+      "medbay",
+      "hospital",
+      "clinic",
+      "heal",
+      "healing",
+      "wounded",
+      "injured",
+      "saglik merkezi",
+      "sağlık merkezi",
+      "revir",
+      "hastane",
+      "sifahane",
+      "şifahane",
+      "iyilestirme",
+      "iyileştirme",
+      "yarali",
+      "yaralı",
+      "can yenileme"
+    ],
+    "cost": {
+      "wood": 100,
+      "food": 0,
+      "gold": 50
+    },
+    "construction_time_s": 15,
+    "health": 500,
+    "trains": [],
+    "description": "Healing building (100 wood + 50 gold, 3x3; Medieval: Health Center, Sci-Fi: Med Bay). Own units whose HP drops below 30% go there automatically when they are idle (not gathering, building, fighting a fire, farming, mining, fighting or guarding a tower). Inside they are hidden from the map for 5 seconds and come out with full HP. Up to 4 units at a time (inside or walking there). You can also right-click your Health Center with wounded units selected to send them in at any HP. If the building is destroyed the units inside come out with their current HP."
+  },
+  {
     "id": "building_farm_v1",
     "type": "building",
     "name": "Farm",

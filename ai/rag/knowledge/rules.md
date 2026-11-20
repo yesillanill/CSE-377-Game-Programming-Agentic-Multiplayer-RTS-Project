@@ -46,6 +46,13 @@ Defense towers: Archer Tower (Medieval) and Rocket Turret (Sci-Fi) cost 100 gold
 soldier to fire (Archer in Medieval, Marine in Sci-Fi). Only Archers can damage an enemy Archer Tower, and
 only Tanks can damage an enemy Rocket Turret. Towers are strong defensive anchors near the base or a gate.
 
+## rule_health_center_v1
+Healing: build a Health Center (Medieval) / Med Bay (Sci-Fi) for 100 wood and 50 gold. When one of your units
+drops below 30% HP and has no active job (gathering, building, fire fighting, farming, mining, fighting, tower duty),
+it walks to the nearest Health Center with room, stays inside for 5 seconds (hidden, cannot be attacked) and comes
+out with full HP. Each Health Center holds 4 units at once. Units ordered elsewhere on the way cancel the trip.
+Right-click your Health Center with wounded units selected to heal them at any HP. Keep it behind your army.
+
 ## rule_walls_v1
 Walls: drawn segment by segment for 10 wood each. Walls block movement and protect workers and buildings.
 The wall upgrade line (Stone/Brick, or Iron/Obsidian in Sci-Fi) increases the health of all walls.
@@ -57,16 +64,33 @@ previous tier of the same line. Upgrades affect soldiers only, not Workers. A ca
 
 ## rule_disasters_v1
 Random disasters hit both sides independently, the computer opponent in single player included. The first one
-comes 90-150 s into the match, then one every 100-200 s. Fire starts in one of your completed buildings (never in walls) and
-slowly burns about 10% of your stored wood, food and gold while it burns. Plague lasts 20 seconds and kills 1-3 of
+comes 90-150 s into the match, then one every 100-200 s. Fire starts in a random completed building (never in walls; the
+Town Center is picked less often when you have other buildings). Nearby buildings (within 4 cells) can catch fire at the
+same time, and an unattended fire can jump to a nearby building every few seconds: up to 3 of your buildings can burn at
+once. Spread your buildings out to limit it. While it burns the fire slowly burns about 10% of your stored wood, food and gold. Fire also damages the burning building: it
+loses 1.5% of its maximum HP per second, but fire damage never takes a building below 25% HP (an unattended fire
+burns longer and deals more damage). Repair the building after the fire. Plague lasts 20 seconds and kills 1-3 of
 your units chosen at random (at least one unit always survives). Rain is only visual and has no gameplay effect.
 
 ## rule_disaster_response_v1
-Fire response: all of your workers automatically stop working and run to the burning building; with at least one
-worker at the building the fire is out after 12 seconds, without workers it burns out five times slower and keeps
-burning resources. Firefighting workers cannot take other orders until the fire is out. There is no repair action:
-if the building is destroyed, rebuild it. Plague response: there is no cure, healing building or quarantine;
-replace the lost units by training new ones and keep enough workers so the economy recovers.
+Fire response: all of your workers automatically stop working and spread over the burning buildings (at least one per
+building) and fight the fire standing right next to the building; with at least one worker at a building its fire is out after 12 seconds, without workers it burns out five times slower and keeps
+burning resources. Firefighting workers cannot take other orders until the fire is out. After the fire, repair the
+damaged building with one worker (a burning building cannot be repaired). Plague response: there is no cure or
+quarantine (the Health Center heals wounded units but does not stop the plague); replace the lost units by training
+new ones and keep enough workers so the economy recovers.
+
+## rule_repair_demolish_v1
+Repair: any of your finished, damaged buildings (the Town Center too) can be repaired by exactly one worker. The
+repair cost is paid when the repair starts: half of the building's build cost scaled by the missing HP (a building
+at 50% HP costs 25% of its build cost; the Town Center is valued at 200 wood and 50 gold). The worker walks right next to
+the building and works for up to 0.75 x the construction time (at least 2 s); the building then has full HP. If the
+worker is taken away or dies, the unused part of the cost is refunded. Select the building and press Repair, or
+right-click your damaged building with a worker selected.
+Demolish: every finished building except the Town Center can be demolished by exactly one worker. The worker works
+for half of the construction time (2-8 s); then 50% of the build cost is refunded (rounded down) and the building
+is removed. The training queue must be empty, a burning building cannot be demolished and a demolition can be
+cancelled before it ends. Demolishing a badly damaged building that is about to be destroyed saves half its cost.
 
 ## strategy_economy_v1
 Economy strategy: keep the Town Center training Workers early, spread workers across wood, food and gold,

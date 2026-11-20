@@ -25,13 +25,18 @@ COSTS = {  # wood, food, gold (same as the Unity catalog / GameActionValidator d
     "worker": (0, 50, 0), "spearman": (0, 60, 20), "archer": (30, 40, 0), "cavalry": (0, 80, 40),
     "house": (30, 0, 0), "farm": (10, 0, 0), "mine": (0, 0, 75), "barracks": (100, 0, 0), "stable": (120, 0, 20),
     "tower": (0, 0, 100), "wall": (60, 0, 0),  # wall: a short line of 6 segments x 10 wood
+    "health_center": (100, 0, 50),
 }
 
 STRATEGIES = ("economy", "defend", "attack", "tech")
 UNITS = ("worker", "spearman", "archer", "cavalry")
 THREATS = ("low", "medium", "high")
-BUILDS = ("none", "house", "farm", "mine", "barracks", "stable", "tower", "wall")
+BUILDS = ("none", "house", "farm", "mine", "barracks", "stable", "tower", "wall", "health_center")
 FOCUS = ("food", "wood", "gold")
+# Building maintenance (BuildingMaintenanceRules.cs): repair the most damaged building / demolish a nearly lost one
+MAINTENANCE = ("none", "repair", "demolish")
+REPAIR_BELOW_PCT = 60      # BotPolicy.RepairBelowPercent: buildings under 60% HP count as "damaged" for the bot
+CRITICAL_BELOW_PCT = 25    # BotPolicy.CriticalBelowPercent: non-Town-Center buildings under 25% HP may be demolished
 
 
 # ---------------------------------------------------------------------------------------------- facts
@@ -58,6 +63,7 @@ def facts(req) -> dict:
         "barracks": blds.get("Barracks", 0), "stable": blds.get("Stable", 0), "blacksmith": blds.get("Blacksmith", 0),
         "house": blds.get("House", 0), "mine": blds.get("Mine", 0), "farm": blds.get("Farm", 0),
         "tower": blds.get("DefenseTower", 0), "wall": blds.get("Wall", 0), "town_center": blds.get("TownCenter", 0),
+        "health_center": blds.get("HealthCenter", 0), "wounded": req.wounded_units,
         "barracks_ready": blds.get("Barracks", 0) - pending.get("Barracks", 0) > 0,
         "stable_ready": blds.get("Stable", 0) - pending.get("Stable", 0) > 0,
         "enemy_units": enemy_units, "enemy_n": sum(enemy_units.values()),
@@ -67,6 +73,8 @@ def facts(req) -> dict:
         "units_lost": sum(1 for e in req.recent_events if e.type == "UNIT_LOST"),
         "lost_buildings": lost,
         "weapon": req.weapon_level, "armor": req.armor_level,
+        "damaged_buildings": req.damaged_buildings, "critical_buildings": req.critical_buildings,
+        "repair_cost": (req.repair_cost.wood, req.repair_cost.food, req.repair_cost.gold),
     }
     f["dominant_enemy"] = max(enemy_units, key=lambda k: (enemy_units[k], k)) if enemy_units else ""
     return f
@@ -139,11 +147,27 @@ def candidate_builds(f: dict, cfg: BotConfig, allowed: Iterable[str] | None = No
         "stable": f["barracks_ready"] and f["stable"] == 0,
         "tower": f["tower"] < cfg.max_towers,
         "wall": f["wall"] == 0 and f["workers"] >= 10,
+        "health_center": f["health_center"] == 0 and f["barracks_ready"],
     }
     out = ["none"] + [b for b in BUILDS[1:] if rules[b] and _affordable(f, b)]
     if allowed is not None:
         allowed = set(allowed) | {"none"}
         out = [b for b in out if b in allowed]
+    return out
+
+
+def candidate_maintenance(f: dict, allowed: Iterable[str] | None = None) -> list[str]:
+    """repair: a damaged building exists and its repair cost is affordable; demolish: a critical (non Town Center)
+    building exists. "none" is always possible."""
+    out = ["none"]
+    w, fo, g = f["repair_cost"]
+    if f["damaged_buildings"] > 0 and f["wood"] >= w and f["food"] >= fo and f["gold"] >= g:
+        out.append("repair")
+    if f["critical_buildings"] > 0:
+        out.append("demolish")
+    if allowed is not None:
+        allowed = set(allowed) | {"none"}
+        out = [m for m in out if m in allowed]
     return out
 
 
@@ -163,7 +187,8 @@ def threat_label(f: dict, ratio: float | None) -> str:
     return "low"
 
 
-def heuristic(req, cfg: BotConfig | None = None, allowed_units=None, allowed_build=None, zones: list[str] | None = None) -> dict:
+def heuristic(req, cfg: BotConfig | None = None, allowed_units=None, allowed_build=None, zones: list[str] | None = None,
+              allowed_maintenance=None) -> dict:
     """Utility distribution per question: {qid: {label: p}} (+ "attack_now": {"yes": p, "no": 1-p})."""
     cfg = cfg or BotConfig()
     f = facts(req)
@@ -242,8 +267,12 @@ def heuristic(req, cfg: BotConfig | None = None, allowed_units=None, allowed_bui
         b["tower"] += 3.2
     if "wall" in b and (f["attacks"] >= 1 or f["enemy_seen"]) and f["workers"] >= 12:
         b["wall"] += 1.3
+    # Health Center: an army exists and units are wounded / lost / under attack (wounded units heal there by themselves)
+    if "health_center" in b and f["army_n"] >= 4 and (f["wounded"] >= 2 or f["attacks"] >= 1 or f["units_lost"] >= 1):
+        b["health_center"] += 2.2
     for lost in f["lost_buildings"]:           # rebuild what fire / attacks destroyed
-        key = {"House": "house", "Barracks": "barracks", "Stable": "stable", "Mine": "mine", "DefenseTower": "tower"}.get(lost)
+        key = {"House": "house", "Barracks": "barracks", "Stable": "stable", "Mine": "mine", "DefenseTower": "tower",
+               "HealthCenter": "health_center"}.get(lost)
         if key in b:
             b[key] += 3.5
     out["build_next"] = _normalize(b)
@@ -253,7 +282,19 @@ def heuristic(req, cfg: BotConfig | None = None, allowed_units=None, allowed_bui
     if f["plagues"] or f["units_lost"] >= 2:
         e["food"] += 0.6
     out["economy_focus"] = _normalize(e)
-    out["_meta"] = {"ratio": ratio, "threat": threat, "attack_ok": attack_ok, "units": units, "builds": builds}
+
+    # maintenance: repair damaged buildings when the base is not under heavy pressure; under a heavy attack a critical
+    # building that will be lost anyway is demolished for its 50% refund
+    maint = candidate_maintenance(f, allowed_maintenance)
+    m = {k: 0.0 for k in maint}
+    m["none"] = 0.6
+    if "repair" in m:
+        m["repair"] += 2.0 if threat != "high" else 0.8
+    if "demolish" in m and threat == "high" and f["attacks"] >= 1:
+        m["demolish"] += 2.8
+    out["maintenance"] = _normalize(m)
+    out["_meta"] = {"ratio": ratio, "threat": threat, "attack_ok": attack_ok, "units": units, "builds": builds,
+                    "maintenance": maint}
     return out
 
 

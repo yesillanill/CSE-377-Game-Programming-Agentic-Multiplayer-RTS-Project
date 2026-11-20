@@ -225,7 +225,7 @@ async def bot_decide(body: bot_decider.BotDecideRequest, x_rts_session: str | No
     t_start = time.perf_counter()
     cfg: BotConfig = state.get("bot_config") or BotConfig()
     zones = bot_decider.visible_zones(body)
-    heur = bot_heuristic.heuristic(body, cfg, body.allowed_units, body.allowed_build, zones)
+    heur = bot_heuristic.heuristic(body, cfg, body.allowed_units, body.allowed_build, zones, body.allowed_maintenance)
 
     # 1) RAG enrichment from the SAME index search_game_knowledge uses (screened by the injection layer; never fatal)
     commander = state.get("commander")

@@ -21,15 +21,18 @@
       "required": ["action_type", "reason"],
       "additionalProperties": false,
       "properties": {
-        "action_type": {"enum": ["TRAIN_UNIT", "BUILD", "MOVE_GROUP", "RESEARCH", "ATTACK", "GATHER"]},
+        "action_type": {"enum": ["TRAIN_UNIT", "BUILD", "MOVE_GROUP", "RESEARCH", "ATTACK", "GATHER", "REPAIR", "DEMOLISH"]},
         "unit_type": {"enum": ["Worker", "Spearman", "Archer", "Cavalry"]},
-        "building_type": {"enum": ["House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "Farm"]},
+        "building_type": {
+          "description": "BUILD: building to construct (never TownCenter); REPAIR: own damaged building type, the most damaged one is repaired by one worker; DEMOLISH: own finished building type, one worker, 50% of its build cost is refunded, never TownCenter or Farm",
+          "enum": ["TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter", "Farm"]
+        },
         "tech_line": {"enum": ["weapon", "armor", "wall"]},
         "count": {"type": "integer", "minimum": 1, "maximum": 20},
         "target_zone": {"enum": ["NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast"]},
         "target_type": {
           "description": "ATTACK: type of a currently VISIBLE enemy unit or building in target_zone (omit = any visible target there)",
-          "enum": ["Worker", "Spearman", "Archer", "Cavalry", "TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall"]
+          "enum": ["Worker", "Spearman", "Archer", "Cavalry", "TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter"]
         },
         "resource_type": {"enum": ["Wood", "Food", "Gold"]},
         "reason": {"type": "string", "maxLength": 250}
@@ -38,7 +41,14 @@
         {"if": {"properties": {"action_type": {"const": "TRAIN_UNIT"}}},
          "then": {"required": ["unit_type", "count"]}},
         {"if": {"properties": {"action_type": {"const": "BUILD"}}},
-         "then": {"required": ["building_type"]}},
+         "then": {"required": ["building_type"],
+                  "properties": {"building_type": {"enum": ["House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter", "Farm"]}}}},
+        {"if": {"properties": {"action_type": {"const": "REPAIR"}}},
+         "then": {"required": ["building_type"],
+                  "properties": {"building_type": {"enum": ["TownCenter", "House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter"]}}}},
+        {"if": {"properties": {"action_type": {"const": "DEMOLISH"}}},
+         "then": {"required": ["building_type"],
+                  "properties": {"building_type": {"enum": ["House", "Barracks", "Stable", "Blacksmith", "Mine", "DefenseTower", "Wall", "HealthCenter"]}}}},
         {"if": {"properties": {"action_type": {"const": "RESEARCH"}}},
          "then": {"required": ["tech_line"]}},
         {"if": {"properties": {"action_type": {"const": "MOVE_GROUP"}}},

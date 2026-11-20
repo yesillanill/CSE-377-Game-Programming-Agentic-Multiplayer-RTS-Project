@@ -32,7 +32,8 @@ from decision.laya_service import FINETUNED_DIR, LayaService, finetuned_availabl
 from rag.retriever import KnowledgeIndex  # noqa: E402
 
 OUT = ROOT / "evaluation" / "bot_decision_eval.csv"
-QIDS = ("strategy", "next_unit", "threat_level", "attack_now", "target_zone", "build_next", "economy_focus")
+QIDS = ("strategy", "next_unit", "threat_level", "attack_now", "target_zone", "build_next", "economy_focus",
+        "maintenance")
 
 
 def laya_choices(svc: LayaService, model: str, req, cfg: BotConfig, knowledge=None) -> tuple[dict, dict, float]:
@@ -45,7 +46,7 @@ def laya_choices(svc: LayaService, model: str, req, cfg: BotConfig, knowledge=No
 
 
 def decide_all(svc, model, req, cfg, index, guard, use_rag: bool):
-    heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, bot_decider.visible_zones(req))
+    heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, bot_decider.visible_zones(req), req.allowed_maintenance)
     knowledge, rag_ids = None, []
     if use_rag:
         rag = asyncio.run(bot_rag.enrich(req, index, guard, cfg, "eval_session_0000000", heur))
@@ -83,7 +84,7 @@ def main() -> None:
     rows = []
     for name, body, expected in SCENARIOS:
         req = bot_decider.BotDecideRequest.model_validate(body)
-        heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, bot_decider.visible_zones(req))
+        heur = H.heuristic(req, cfg, req.allowed_units, req.allowed_build, bot_decider.visible_zones(req), req.allowed_maintenance)
         picks = {"heuristic": {q: H.argmax(d) for q, d in heur.items() if not q.startswith("_")}}
         lo, bl, _, dec = decide_all(base, base.bot_model, req, cfg, index, guard, use_rag=False)
         picks["laya"], picks["blend"] = lo, bl

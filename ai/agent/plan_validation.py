@@ -80,6 +80,8 @@ def normalize_action(raw: dict) -> dict:
         "MOVE_GROUP": {"unit_type", "target_zone"},
         "ATTACK": {"unit_type", "count", "target_zone", "target_type"},
         "GATHER": {"resource_type", "count"},
+        "REPAIR": {"building_type"},
+        "DEMOLISH": {"building_type"},
     }.get(out.get("action_type"))
     if allowed is not None:
         out = {k: v for k, v in out.items() if k in allowed or k in ("action_type", "reason")}
@@ -138,6 +140,14 @@ def precheck_actions(actions: list[dict], snap: SafeSnapshot) -> list[str]:
     levels = {"weapon": snap.tech.weapon_level, "armor": snap.tech.armor_level, "wall": snap.tech.wall_level}
     researching = bool(snap.tech.researching)
     idle_workers = sum(u.idle for u in snap.own_units if u.type == "Worker")
+    # Repair / demolish targets per type (BuildingMaintenanceRules; one worker per job)
+    repairable = {b.type: b for b in snap.own_buildings if b.damaged > 0}
+    demolishable: dict[str, int] = {}
+    for b in snap.own_buildings:
+        free = b.count - b.under_construction - b.repairing - b.demolishing
+        if free > 0:
+            demolishable[b.type] = demolishable.get(b.type, 0) + free
+    maintenance_workers = workers
 
     def pay(cost: dict) -> str:
         short = {k: cost[k] - res[k] for k in cost if cost[k] > res[k]}
@@ -205,5 +215,28 @@ def precheck_actions(actions: list[dict], snap: SafeSnapshot) -> list[str]:
                 w = f"Not enough idle workers (have {idle_workers}, need {a['count']})."
             else:
                 idle_workers -= a["count"]
+        elif t == "REPAIR":
+            # Mirror of AiPlanExecutor.FindMaintenanceTarget + BuildingMaintenanceRules.ValidateRepair
+            target = repairable.get(a["building_type"])
+            if target is None:
+                w = f"No damaged {a['building_type']} to repair"
+            elif maintenance_workers <= 0:
+                w = "No available Worker to repair."
+            else:
+                w = pay(target.repair_cost.model_dump())
+                if not w:
+                    maintenance_workers -= 1
+                    repairable.pop(a["building_type"], None)
+        elif t == "DEMOLISH":
+            # Mirror of BuildingMaintenanceRules.ValidateDemolish (Town Center is rejected by the schema)
+            if demolishable.get(a["building_type"], 0) <= 0:
+                w = f"No finished {a['building_type']} to demolish"
+            elif maintenance_workers <= 0:
+                w = "No available Worker to demolish."
+            else:
+                demolishable[a["building_type"]] -= 1
+                maintenance_workers -= 1
+                for k, v in catalog.demolish_refund(a["building_type"]).items():
+                    res[k] += v
         warnings.append(w)
     return warnings

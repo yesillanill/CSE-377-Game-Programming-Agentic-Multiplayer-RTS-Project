@@ -96,7 +96,7 @@ class PlanTests(unittest.TestCase):
         self.assertEqual(plan["actions"], [])
         self.assertEqual(rejected[0]["stage"], "schema")
         self.assertEqual(schema()["$defs"]["action"]["properties"]["action_type"]["enum"],
-                         ["TRAIN_UNIT", "BUILD", "MOVE_GROUP", "RESEARCH", "ATTACK", "GATHER"])
+                         ["TRAIN_UNIT", "BUILD", "MOVE_GROUP", "RESEARCH", "ATTACK", "GATHER", "REPAIR", "DEMOLISH"])
 
     def test_attack_and_gather_are_valid_and_normalized(self):
         plan, rejected = build_plan("x", 0.5, [

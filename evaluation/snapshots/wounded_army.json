@@ -1,0 +1,27 @@
+{
+  "match_id": "eval-wounded",
+  "game_mode": "SciFi",
+  "ui_language": "en",
+  "game_time_seconds": 720.0,
+  "map_size": {"x": 64, "y": 64},
+  "base_region": "SouthWest",
+  "resources": {"wood": 260, "food": 300, "gold": 140},
+  "population": {"current": 18, "max": 30, "queued": 0},
+  "own_units": [
+    {"type": "Worker", "display_name": "Engineer", "count": 9, "region": "SouthWest", "idle": 1, "wounded": 0, "healing": 0},
+    {"type": "Spearman", "display_name": "Marine", "count": 5, "region": "Center", "idle": 5, "wounded": 3, "healing": 0},
+    {"type": "Archer", "display_name": "Sniper", "count": 4, "region": "Center", "idle": 4, "wounded": 2, "healing": 0}
+  ],
+  "own_buildings": [
+    {"type": "TownCenter", "display_name": "Command Center", "count": 1, "region": "SouthWest"},
+    {"type": "House", "display_name": "Habitat", "count": 1, "region": "SouthWest"},
+    {"type": "Barracks", "display_name": "Armory", "count": 1, "region": "SouthWest"}
+  ],
+  "visible_enemies": [],
+  "visible_enemy_buildings": [],
+  "tech": {"weapon_level": 0, "armor_level": 0, "wall_level": 0, "researching": "", "research_progress": 0.0, "researched": []},
+  "recent_events": [
+    {"type": "UNDER_ATTACK", "detail": "", "region": "Center", "seconds_ago": 30},
+    {"type": "UNIT_LOST", "detail": "Spearman", "region": "Center", "seconds_ago": 28}
+  ]
+}
